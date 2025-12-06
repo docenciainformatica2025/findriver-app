@@ -7,14 +7,12 @@ import {
     Typography,
     Paper,
     MenuItem,
-    MenuItem,
     InputAdornment,
     IconButton
 } from '@mui/material';
 import {
     AttachMoney as MoneyIcon,
     Description as DescriptionIcon,
-    Category as CategoryIcon,
     DirectionsCar as CarIcon,
     CheckCircle as CheckIcon,
     ArrowBack as ArrowBackIcon
@@ -55,103 +53,108 @@ export default function AddIncomeScreen() {
         setDescripcion('');
         setKm('');
         toast.success('Ingreso registrado correctamente');
+        navigate('/dashboard');
     };
 
     return (
         <Box sx={{ p: 2, pb: 10 }}>
-            import {useNavigate} from 'react-router-dom';
-            import {
-                ArrowBack as ArrowBackIcon,
-                AttachMoney as MoneyIcon,
-// ... existing imports ...
+            {/* Header with Back Button */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <IconButton onClick={() => navigate('/dashboard')} sx={{ mr: 1 }}>
+                    <ArrowBackIcon />
+                </IconButton>
+                <Typography variant="h5" fontWeight="bold">
+                    Registrar Ingreso
+                </Typography>
+            </Box>
 
-export default function AddIncomeScreen() {
-    const navigate = useNavigate();
-            const {addTransaction} = useFinance();
-            // ... existing hooks ...
-                            fullWidth
-                            label="Plataforma"
-                            value={plataforma}
-                            onChange={(e) => setPlataforma(e.target.value)}
-                            margin="normal"
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <CarIcon color="primary" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        >
-                            {plataformas.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+                <form onSubmit={registrarIngreso}>
+                    <TextField
+                        select
+                        fullWidth
+                        label="Plataforma"
+                        value={plataforma}
+                        onChange={(e) => setPlataforma(e.target.value)}
+                        margin="normal"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <CarIcon color="primary" />
+                                </InputAdornment>
+                            ),
+                        }}
+                    >
+                        {plataformas.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
 
-                        <TextField
-                            fullWidth
-                            label="Monto"
-                            type="number"
-                            value={monto}
-                            onChange={(e) => setMonto(e.target.value)}
-                            margin="normal"
-                            placeholder="0.00"
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <MoneyIcon color="success" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <TextField
+                        fullWidth
+                        label="Monto"
+                        type="number"
+                        value={monto}
+                        onChange={(e) => setMonto(e.target.value)}
+                        margin="normal"
+                        placeholder="0.00"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <MoneyIcon color="success" />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
 
-                        <TextField
-                            fullWidth
-                            label="Descripción"
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            margin="normal"
-                            placeholder="Opcional (ej. Viaje al aeropuerto)"
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <DescriptionIcon color="secondary" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <TextField
+                        fullWidth
+                        label="Descripción"
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        margin="normal"
+                        placeholder="Opcional (ej. Viaje al aeropuerto)"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <DescriptionIcon color="secondary" />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
 
-                        <TextField
-                            fullWidth
-                            label="Kilómetros (Opcional)"
-                            type="number"
-                            value={km}
-                            onChange={(e) => setKm(e.target.value)}
-                            margin="normal"
-                            placeholder="0"
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <CarIcon color="warning" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <TextField
+                        fullWidth
+                        label="Kilómetros (Opcional)"
+                        type="number"
+                        value={km}
+                        onChange={(e) => setKm(e.target.value)}
+                        margin="normal"
+                        placeholder="0"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <CarIcon color="warning" />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
 
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            size="large"
-                            startIcon={<CheckIcon />}
-                            disabled={!monto}
-                            sx={{ mt: 3 }}
-                        >
-                            Registrar Ingreso
-                        </Button>
-                    </form >
-                </Paper >
-            </Box >
-            );
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        size="large"
+                        startIcon={<CheckIcon />}
+                        disabled={!monto}
+                        sx={{ mt: 3 }}
+                    >
+                        Registrar Ingreso
+                    </Button>
+                </form>
+            </Paper>
+        </Box>
+    );
 }
