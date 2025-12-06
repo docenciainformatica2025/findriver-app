@@ -1,0 +1,189 @@
+import React from 'react';
+import {
+    Box,
+    Container,
+    Typography,
+    Grid,
+    Card,
+    CardContent,
+    Avatar,
+    Fab,
+    useTheme,
+    IconButton,
+    Paper
+} from '@mui/material';
+import {
+    Add as AddIcon,
+    Remove as RemoveIcon,
+    Logout as LogoutIcon,
+    AccountBalanceWallet as WalletIcon,
+    TrendingDown as TrendingDownIcon,
+    TrendingUp as TrendingUpIcon,
+    DirectionsCar as CarIcon
+} from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import { useAdvancedCalculations } from '../hooks/useAdvancedCalculations';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { gradients, cardStyles, shadows, cardThemes } from '../utils/themeUtils';
+import MaintenanceAlerts from '../components/MaintenanceAlerts';
+import StatCard from '../components/StatCard';
+import OnboardingModal from '../components/OnboardingModal';
+import { formatMoney } from '../utils/formatters';
+
+export default function DashboardScreen() {
+    const { user, logout } = useAuth();
+    const {
+        totalIngresosHoy,
+        totalCostosHoy,
+        gananciaNetaHoy,
+        cpkReal,
+        ingresoPorKm,
+        viajesHoy,
+        dailyFixedCost
+    } = useAdvancedCalculations();
+
+    const navigate = useNavigate();
+    const theme = useTheme();
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
+
+    return (
+        <Container maxWidth="lg" sx={{ mt: 2, mb: 12 }}>
+            {/* Header section with Welcome and Logout */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Avatar
+                        sx={{
+                            width: 50,
+                            height: 50,
+                            mr: 2,
+                            background: gradients.primary,
+                            boxShadow: shadows.fab,
+                            cursor: 'pointer'
+                        }}
+                        onClick={() => navigate('/perfil')}
+                    >
+                        {user?.email?.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box>
+                        <Typography variant="body2" color="text.secondary">
+                            Bienvenido de vuelta,
+                        </Typography>
+                        <Typography variant="h5" fontWeight="bold" color="text.primary">
+                            {(user?.nombre && user.nombre !== 'Usuario Mock')
+                                ? user.nombre
+                                : (user?.displayName || 'Conductor')}
+                        </Typography>
+                    </Box>
+                </Box>
+                <IconButton onClick={handleLogout} sx={{ bgcolor: 'background.paper', boxShadow: 1 }}>
+                    <LogoutIcon color="action" />
+                </IconButton>
+            </Box>
+
+            {/* Onboarding Wizard */}
+            <OnboardingModal />
+
+            {/* KPI Cards Grid */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Maintenance Alert Section - Takes half width on large screens */}
+                <Grid item xs={12} md={6}>
+                    <MaintenanceAlerts />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <Paper
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            height: '100%',
+                            background: 'linear-gradient(to right, #ffffff, #f8f9fa)',
+                            border: '1px solid rgba(0,0,0,0.02)',
+                            boxShadow: shadows.card,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <Typography variant="h6" gutterBottom fontWeight="bold" color="primary.main">
+                            🚀 Panel de Control
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                            Gestiona tus finanzas de manera inteligente. Utiliza los botones flotantes para registrar movimientos.
+                        </Typography>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12} sm={6} lg={3}>
+                    <StatCard
+                        title="Ingresos Hoy"
+                        value={formatMoney(totalIngresosHoy)}
+                        icon={<WalletIcon />}
+                        theme={cardThemes.secondary}
+                        to="/ingresos"
+                        subtitle={`${viajesHoy} viajes`}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={3}>
+                    <StatCard
+                        title="Gastos Totales"
+                        value={formatMoney(totalCostosHoy)}
+                        icon={<TrendingDownIcon />}
+                        theme={cardThemes.error}
+                        to="/gastos"
+                        subtitle={`Incluye $${formatMoney(dailyFixedCost)} fijos`}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={3}>
+                    <StatCard
+                        title="Ganancia Real"
+                        value={formatMoney(gananciaNetaHoy)}
+                        icon={<TrendingUpIcon />}
+                        theme={cardThemes.primary}
+                        to="/estadisticas"
+                        subtitle={gananciaNetaHoy > 0 ? "Rentable" : "Pérdida"}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={3}>
+                    <StatCard
+                        title="CPK (Costo/Km)"
+                        value={formatMoney(cpkReal)}
+                        icon={<CarIcon />}
+                        theme={cardThemes.info} // Blue/Indigo theme
+                        to="/estadisticas"
+                        subtitle={`Ingreso: ${formatMoney(ingresoPorKm)}/km`}
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Floating Action Buttons */}
+            <Box sx={{ position: 'fixed', bottom: 90, right: 24, display: 'flex', flexDirection: 'column', gap: 2, zIndex: 1000, alignItems: 'flex-end' }}>
+                <Fab
+                    variant="extended"
+                    sx={{ bgcolor: '#fff', color: '#e74c3c', '&:hover': { bgcolor: '#ffebee' } }}
+                    component={RouterLink}
+                    to="/gastos"
+                    aria-label="add expense"
+                    size="medium"
+                >
+                    <RemoveIcon sx={{ mr: 1 }} />
+                    Gasto
+                </Fab>
+                <Fab
+                    variant="extended"
+                    color="primary"
+                    component={RouterLink}
+                    to="/ingresos"
+                    aria-label="add income"
+                    size="large"
+                    sx={{ boxShadow: shadows.fab, background: gradients.secondary }}
+                >
+                    <AddIcon sx={{ mr: 1 }} />
+                    Ingreso
+                </Fab>
+            </Box>
+        </Container>
+    );
+}

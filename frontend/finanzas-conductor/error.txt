@@ -1,0 +1,15 @@
+
+> finanzas-conductor-web@1.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 1235 modules transformed.
+x Build failed in 11.99s
+error during build:
+Could not resolve "../styles/chartStyles" from "src/components/charts/CategoryCharts.jsx"
+file: C:/APP UBER/finanzas-conductor/src/components/charts/CategoryCharts.jsx
+    at getRollupError (file:///C:/APP%20UBER/finanzas-conductor/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///C:/APP%20UBER/finanzas-conductor/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at ModuleLoader.handleInvalidResolvedId (file:///C:/APP%20UBER/finanzas-conductor/node_modules/rollup/dist/es/shared/node-entry.js:21590:24)
+    at file:///C:/APP%20UBER/finanzas-conductor/node_modules/rollup/dist/es/shared/node-entry.js:21550:26
