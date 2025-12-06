@@ -73,7 +73,6 @@ export default function RealTimeChart() {
                             transition: 'transform 0.2s ease-in-out'
                         }}
                     >
-                    >
                         {formatMoney(currentValue)}
                     </Typography>
                     <Chip

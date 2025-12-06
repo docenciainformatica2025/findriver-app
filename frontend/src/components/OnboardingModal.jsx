@@ -114,46 +114,15 @@ export default function OnboardingModal() {
                         value={fuelPrice}
                         onChange={(e) => setFuelPrice(e.target.value)}
                         fullWidth
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <GasIcon color="primary" />
-                                </InputAdornment>
-                            ),
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>
-                        }}
-                        helperText="Precio actual en tu estación de servicio"
-                    />
-
-                    <TextField
-                        label="Kilometraje Actual (Odómetro)"
-                        type="number"
-                        value={odometer}
-                        onChange={(e) => setOdometer(e.target.value)}
-                        fullWidth
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SpeedIcon color="secondary" />
-                                </InputAdornment>
-                            ),
-                            endAdornment: <InputAdornment position="end">km</InputAdornment>
-                        }}
-                        helperText="Lo que marca tu tablero ahora mismo"
-                    />
-                </Box>
-            </DialogContent>
-            <DialogActions sx={{ pb: 4, px: 4, justifyContent: 'center' }}>
-                <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleSave}
-                    disabled={!fuelPrice || !odometer || loading}
-                    sx={{ minWidth: 200, borderRadius: 50 }}
-                >
-                    {loading ? 'Guardando...' : 'Comenzar'}
-                </Button>
-            </DialogActions>
+                        variant="contained"
+                        size="large"
+                        onClick={handleSave}
+                        disabled={!fuelPrice || !odometer || loading}
+                        sx={{ minWidth: 200, borderRadius: 50 }}
+                    >
+                        {loading ? 'Guardando...' : 'Comenzar'}
+                    </Button>
+                </DialogActions>
         </Dialog>
     );
 }
