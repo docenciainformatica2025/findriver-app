@@ -53,6 +53,7 @@
         "node-cron": "^3.0.3",
         "nodemailer": "^6.9.5",
         "pdfkit": "^0.14.0",
+        "protobufjs": "^7.5.4",
         "socket.io": "^4.7.2",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.0",
