@@ -80,38 +80,47 @@ export const chartStyles = {
         strokeWidth: 1
     },
     // Colores temáticos
+    // Colores temáticos Metálicos/RGB
     colors: {
-        primary: '#3498DB',
-        secondary: '#2ECC71',
-        danger: '#E74C3C',
-        warning: '#F39C12',
-        info: '#9B59B6',
-        dark: '#2C3E50',
-        light: '#ECF0F1',
-        success: '#27AE60',
-        income: '#2ECC71',
-        expense: '#E74C3C',
-        profit: '#3498DB'
+        primary: '#2962FF', // Electric Blue
+        secondary: '#00E5FF', // Cyan Neon
+        danger: '#FF3D00', // Deep Orange
+        warning: '#FF9100', // Orange Neon
+        info: '#AA00FF', // Purple Neon
+        dark: '#212121',
+        light: '#FAFAFA',
+        success: '#00E676', // Green Neon
+
+        // Específico Finanzas
+        income: '#00E676', // Verde Neón (Ingresos)
+        expense: '#FF3D00', // Naranja/Rojo Intenso (Gastos)
+        profit: '#2979FF'  // Azul Intenso (Ganancia)
     },
     gradients: {
-        primary: ['#3498DB', '#2980B9'],
-        success: ['#2ECC71', '#27AE60'],
-        danger: ['#E74C3C', '#C0392B']
+        primary: ['#2962FF', '#00B0FF'],
+        success: ['#00E676', '#00B0FF'], // Verde a Azul (Ingresos)
+        danger: ['#FF9100', '#FF3D00'], // Amarillo a Naranja (Gastos)
+        info: ['#AA00FF', '#EA80FC']
     }
 };
 
-// Paleta de colores para categorías
+// Paleta de colores para categorías (Vibrante)
 export const categoryColors = {
-    gasolina: '#FF6384',
-    mantenimiento: '#4BC0C0',
-    peaje: '#FFCE56',
-    comida: '#36A2EB',
-    otros: '#9966FF',
-    viaje: '#2ECC71',
-    encomienda: '#3498DB',
-    app: '#9B59B6',
-    seguro: '#FF9F40',
-    lavado: '#8AC926'
+    // Gastos (Cálidos)
+    gasolina: '#FF9100', // Naranja Neón
+    mantenimiento: '#FF3D00', // Rojo Naranja
+    peaje: '#FFC400', // Amber
+    comida: '#FF6D00', // Pumpkin
+    otros: '#BF360C', // Deep Red
+
+    // Ingresos (Fríos/Frescos)
+    viaje: '#00E676', // Green Neon
+    encomienda: '#00E5FF', // Cyan Neon
+    app: '#2979FF', // Blue
+
+    // Otros
+    seguro: '#AA00FF', // Purple
+    lavado: '#00B0FF' // Light Blue
 };
 
 // Configuración de gráficos por tipo

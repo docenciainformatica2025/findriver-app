@@ -8,21 +8,18 @@ import {
     Button,
     TextField,
     Box,
-    Typography,
     InputAdornment
 } from '@mui/material';
 import {
-    Speed as SpeedIcon,
-    LocalGasStation as GasIcon
+    Speed as SpeedIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import client from '../api/client';
 import { toast } from 'react-hot-toast';
 
 export default function OnboardingModal() {
-    const { user, refreshUser } = useAuth(); // Assuming refreshUser exists or I update user manually
+    const { user } = useAuth();
     const [open, setOpen] = useState(false);
-    const [step, setStep] = useState(1); // 1: Intro, 2: Data
     const [fuelPrice, setFuelPrice] = useState('');
     const [odometer, setOdometer] = useState('');
     const [loading, setLoading] = useState(false);
@@ -31,9 +28,8 @@ export default function OnboardingModal() {
         if (user) {
             const hasFuelPrice = user.configuracion?.precioCombustible > 0;
             const hasVehicle = user.vehiculos && user.vehiculos.length > 0;
-            // Strict check: Must have fuel price AND a vehicle with mileage set (or at least a vehicle record)
-            // If the user is new, they might not have a vehicle record yet.
 
+            // Show modal if critical data is missing
             if (!hasFuelPrice || !hasVehicle) {
                 setOpen(true);
             }
@@ -69,7 +65,7 @@ export default function OnboardingModal() {
                     marca: 'Mi Vehículo',
                     modelo: 'General',
                     año: new Date().getFullYear(),
-                    placa: `TEMPORAL-${Date.now()}`, // Unique placeholder to avoid validation errors
+                    placa: `TEMPORAL-${Date.now()}`,
                     tipo: user.tipoVehiculo || 'auto',
                     principal: true,
                     estadisticas: {
@@ -81,7 +77,8 @@ export default function OnboardingModal() {
 
             toast.success('¡Configuración completada!');
             setOpen(false);
-            if (window.location.reload) window.location.reload(); // Simple reload to refresh all context data
+            // Simple reload to ensure all contexts (Auth, Vehicle) refresh with new data
+            window.location.reload();
         } catch (error) {
             console.error(error);
             toast.error(`Error: ${error.response?.data?.error || error.message}`);
@@ -109,20 +106,40 @@ export default function OnboardingModal() {
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
                     <TextField
-                        label="Precio Combustible (Galón/Litro)"
+                        label="Precio Gasolina/Combustible"
                         type="number"
                         value={fuelPrice}
                         onChange={(e) => setFuelPrice(e.target.value)}
                         fullWidth
-                        variant="contained"
-                        size="large"
-                        onClick={handleSave}
-                        disabled={!fuelPrice || !odometer || loading}
-                        sx={{ minWidth: 200, borderRadius: 50 }}
-                    >
-                        {loading ? 'Guardando...' : 'Comenzar'}
-                    </Button>
-                </DialogActions>
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start">$</InputAdornment>
+                        }}
+                        helperText="Precio por galón o unidad de medida"
+                    />
+
+                    <TextField
+                        label="Kilometraje Actual (Odómetro)"
+                        type="number"
+                        value={odometer}
+                        onChange={(e) => setOdometer(e.target.value)}
+                        fullWidth
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start"><SpeedIcon /></InputAdornment>
+                        }}
+                    />
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{ pb: 4, justifyContent: 'center' }}>
+                <Button
+                    variant="contained"
+                    size="large"
+                    onClick={handleSave}
+                    disabled={!fuelPrice || !odometer || loading}
+                    sx={{ minWidth: 200, borderRadius: 50 }}
+                >
+                    {loading ? 'Guardando...' : 'Comenzar'}
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 }

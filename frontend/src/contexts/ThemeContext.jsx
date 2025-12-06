@@ -27,18 +27,22 @@ export const CustomThemeProvider = ({ children }) => {
         palette: {
             mode,
             primary: {
-                main: '#3498db',
-                light: '#5dade2',
-                dark: '#21618c',
+                main: '#2962FF', // Electric Blue
+                light: '#768FFF',
+                dark: '#0039CB',
             },
             secondary: {
-                main: '#2ecc71',
-                light: '#58d68d',
-                dark: '#1e8449',
+                main: '#00E5FF', // Cyan A400 (Neon Blue)
+                light: '#6EFFFF',
+                dark: '#00B2CC',
             },
             background: {
-                default: mode === 'light' ? '#f8f9fa' : '#121212',
+                default: mode === 'light' ? '#f4f6f8' : 'transparent', // Transparent to let body bg image show
                 paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
+            },
+            text: {
+                primary: mode === 'light' ? '#1a2027' : '#ffffff',
+                secondary: mode === 'light' ? '#3E5060' : 'rgba(255, 255, 255, 0.7)',
             },
         },
         typography: {

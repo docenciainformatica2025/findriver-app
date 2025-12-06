@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { useTheme } from '@mui/material/styles';
 import moment from 'moment';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -38,6 +39,8 @@ export default function CategoryCharts({ transactions = [], onOpenAdvanced }) {
     const [timeRange, setTimeRange] = useState('mes');
     const categoryRef = useRef(null);
     const { exportAsImage } = useChartExport();
+    const theme = useTheme();
+    const axisColor = theme.palette.mode === 'dark' ? '#E0E0E0' : '#9e9e9e';
 
     const categories = [
         { id: 'todos', name: 'Todos', color: chartStyles.colors.primary, icon: <BarChartIcon /> },
@@ -154,7 +157,7 @@ export default function CategoryCharts({ transactions = [], onOpenAdvanced }) {
                                 >
                                     <CardContent>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: cat.color }}>
-                                            {cat.icon}
+                                            {React.cloneElement(cat.icon, { sx: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' } })}
                                             <Typography variant="subtitle2" sx={{ ml: 1, color: 'text.primary' }}>{cat.name}</Typography>
                                         </Box>
                                         <Typography variant="h5" fontWeight="bold">
@@ -185,7 +188,7 @@ export default function CategoryCharts({ transactions = [], onOpenAdvanced }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         mr: 2, color: categoryInfo.color
                     }}>
-                        {categoryInfo.icon}
+                        {React.cloneElement(categoryInfo.icon, { sx: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' } })}
                     </Box>
                     <Box>
                         <Typography variant="h6" fontWeight="bold">Total: ${data.total}</Typography>
@@ -213,38 +216,38 @@ export default function CategoryCharts({ transactions = [], onOpenAdvanced }) {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                            <YAxis axisLine={false} tickLine={false} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} />
                             <Tooltip contentStyle={chartStyles.tooltip} itemStyle={chartStyles.tooltipText} />
                             <Area type="monotone" dataKey="value" stroke={categoryInfo.color} fillOpacity={1} fill="url(#colorValue)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </Box>
 
-                <Paper sx={{ mb: 2, bgcolor: '#fff9e6', p: 2, borderRadius: 2 }}>
+                <Paper sx={{ mb: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(243, 156, 18, 0.15)' : '#fff9e6', p: 2, borderRadius: 2 }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LightbulbIcon sx={{ color: '#F39C12' }} /> Insights
+                        <LightbulbIcon sx={{ color: '#F39C12', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} /> Insights
                     </Typography>
                     {data.insights.map((insight, index) => (
                         <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'start', mb: 0.5 }}>
-                            <LightbulbIcon sx={{ color: '#F39C12', fontSize: 16, mt: 0.5 }} />
+                            <LightbulbIcon sx={{ color: '#F39C12', fontSize: 16, mt: 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }} />
                             <Typography variant="body2" color="text.secondary">{insight}</Typography>
                         </Box>
                     ))}
                 </Paper>
 
-                <Paper sx={{ bgcolor: '#f0f7fe', p: 2, borderRadius: 2 }}>
+                <Paper sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(41, 98, 255, 0.15)' : '#f0f7fe', p: 2, borderRadius: 2 }}>
                     <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <BullseyeIcon sx={{ color: 'info.main' }} /> Recomendaciones
+                        <BullseyeIcon sx={{ color: 'info.main', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} /> Recomendaciones
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'start', mb: 0.5 }}>
-                        <BullseyeIcon sx={{ color: 'success.main', fontSize: 16, mt: 0.5 }} />
+                        <BullseyeIcon sx={{ color: 'success.main', fontSize: 16, mt: 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }} />
                         <Typography variant="body2" color="text.secondary">
                             Establece un presupuesto máximo de <strong>${(data.promedio * 1.1).toFixed(2)}/día</strong>
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'start' }}>
-                        <CalendarIcon sx={{ color: 'info.main', fontSize: 16, mt: 0.5 }} />
+                        <CalendarIcon sx={{ color: 'info.main', fontSize: 16, mt: 0.5, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }} />
                         <Typography variant="body2" color="text.secondary">
                             Planifica gastos para optimizar tu flujo de caja semanal.
                         </Typography>

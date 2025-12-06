@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { keyframes } from '@mui/system';
 import {
     Box,
     TextField,
@@ -41,6 +42,16 @@ export default function LoginScreen() {
         }
     };
 
+    const slideInLeft = keyframes`
+      from { transform: translateX(-50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    `;
+
+    const fadeIn = keyframes`
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    `;
+
     return (
         <Container component="main" maxWidth="xs">
             <Box
@@ -59,9 +70,14 @@ export default function LoginScreen() {
                         borderRadius: 2,
                     }}
                 >
-                    <Typography component="h1" variant="h4" align="center" gutterBottom>
-                        🚗 FinDriver
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <Box sx={{ animation: `${slideInLeft} 1s ease-out`, fontSize: '2.5rem' }}>
+                            🚗
+                        </Box>
+                        <Typography component="h1" variant="h4" align="center" fontWeight="bold" sx={{ animation: `${fadeIn} 1.2s ease-out` }}>
+                            FinDriver
+                        </Typography>
+                    </Box>
                     <Typography variant="body1" color="text.secondary" align="center" mb={3}>
                         Inicia sesión en tu cuenta
                     </Typography>

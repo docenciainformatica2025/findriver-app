@@ -54,6 +54,7 @@ export default function ProfileScreen() {
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
+        tipoVehiculo: '',
         modelo: '',
         placa: '',
         notificaciones: true,
@@ -66,6 +67,7 @@ export default function ProfileScreen() {
             setFormData({
                 nombre: realName,
                 telefono: user?.telefono || '',
+                tipoVehiculo: user?.tipoVehiculo || '',
                 modelo: user?.modelo || '',
                 placa: user?.placa || '',
                 notificaciones: user?.configuracion?.notificaciones ?? true,
@@ -90,6 +92,7 @@ export default function ProfileScreen() {
             const updates = {
                 nombre: formData.nombre,
                 telefono: formData.telefono,
+                tipoVehiculo: formData.tipoVehiculo,
                 modelo: formData.modelo,
                 placa: formData.placa,
                 configuracion: {
@@ -245,48 +248,75 @@ export default function ProfileScreen() {
             {/* Vehicle Info */}
             <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>
                 Información del Vehículo
+                {!editing && (
+                    <Typography component="span" variant="caption" color="primary" sx={{ ml: 2, cursor: 'pointer' }} onClick={() => setEditing(true)}>
+                        (Toca para editar)
+                    </Typography>
+                )}
             </Typography>
             <Card sx={{ mb: 3 }}>
                 <List disablePadding>
-                    <ListItem divider>
+                    <ListItem divider onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
                         <ListItemIcon><CarIcon color="primary" /></ListItemIcon>
                         <ListItemText
-                            primary="Tipo"
-                            secondary={user?.tipoVehiculo || 'No especificado'}
+                            primary="Tipo de Vehículo"
+                            secondary={
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    size="small"
+                                    value={formData.tipoVehiculo || ''}
+                                    onChange={(e) => setFormData({ ...formData, tipoVehiculo: e.target.value })}
+                                    placeholder="Ej. Automóvil, Moto, Van"
+                                    InputProps={{
+                                        readOnly: !editing,
+                                        disableUnderline: !editing,
+                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                    }}
+                                />
+                            }
                         />
                     </ListItem>
-                    <ListItem divider>
+                    <ListItem divider onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
                         <ListItemIcon><BadgeIcon color="primary" /></ListItemIcon>
                         <ListItemText
                             primary="Modelo"
                             secondary={
-                                editing ? (
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        variant="standard"
-                                        value={formData.modelo}
-                                        onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
-                                    />
-                                ) : (formData.modelo || 'No especificado')
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    size="small"
+                                    value={formData.modelo || ''}
+                                    onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
+                                    placeholder="Ej. 2023"
+                                    InputProps={{
+                                        readOnly: !editing,
+                                        disableUnderline: !editing,
+                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                    }}
+                                />
                             }
                         />
                     </ListItem>
-                    <ListItem>
+                    <ListItem onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
                         <ListItemIcon><BadgeIcon color="primary" /></ListItemIcon>
                         <ListItemText
                             primary="Placa"
                             secondary={
-                                editing ? (
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        variant="standard"
-                                        value={formData.placa}
-                                        onChange={(e) => setFormData({ ...formData, placa: e.target.value })}
-                                        inputProps={{ style: { textTransform: 'uppercase' } }}
-                                    />
-                                ) : (formData.placa || 'No registrada')
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    size="small"
+                                    value={formData.placa || ''}
+                                    onChange={(e) => setFormData({ ...formData, placa: e.target.value })}
+                                    placeholder="ABC-123"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
+                                    InputProps={{
+                                        readOnly: !editing,
+                                        disableUnderline: !editing,
+                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                    }}
+                                />
                             }
                         />
                     </ListItem>
@@ -299,20 +329,24 @@ export default function ProfileScreen() {
             </Typography>
             <Card sx={{ mb: 3 }}>
                 <List disablePadding>
-                    <ListItem>
+                    <ListItem onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
                         <ListItemIcon><PhoneIcon color="primary" /></ListItemIcon>
                         <ListItemText
                             primary="Teléfono"
                             secondary={
-                                editing ? (
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        variant="standard"
-                                        value={formData.telefono}
-                                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                                    />
-                                ) : (formData.telefono || 'No registrado')
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    size="small"
+                                    value={formData.telefono || ''}
+                                    onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                    placeholder="300 123 4567"
+                                    InputProps={{
+                                        readOnly: !editing,
+                                        disableUnderline: !editing,
+                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                    }}
+                                />
                             }
                         />
                     </ListItem>
@@ -334,40 +368,56 @@ export default function ProfileScreen() {
                             type="number"
                             fullWidth
                             size="small"
-                            disabled={!editing}
                             value={formData.costosFijos?.seguroAnual || ''}
                             onChange={(e) => setFormData({ ...formData, costosFijos: { ...formData.costosFijos, seguroAnual: e.target.value } })}
-                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
                         />
                         <TextField
                             label="Impuestos / Tenencia"
                             type="number"
                             fullWidth
                             size="small"
-                            disabled={!editing}
                             value={formData.costosFijos?.impuestosAnuales || ''}
                             onChange={(e) => setFormData({ ...formData, costosFijos: { ...formData.costosFijos, impuestosAnuales: e.target.value } })}
-                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
                         />
                         <TextField
                             label="Depreciación Estimada (Año)"
                             type="number"
                             fullWidth
                             size="small"
-                            disabled={!editing}
                             value={formData.costosFijos?.depreciacionAnual || ''}
                             onChange={(e) => setFormData({ ...formData, costosFijos: { ...formData.costosFijos, depreciacionAnual: e.target.value } })}
-                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
                         />
                         <TextField
                             label="Plan Celular (Mensual)"
                             type="number"
                             fullWidth
                             size="small"
-                            disabled={!editing}
                             value={formData.costosFijos?.planCelularMensual || ''}
                             onChange={(e) => setFormData({ ...formData, costosFijos: { ...formData.costosFijos, planCelularMensual: e.target.value } })}
-                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
                         />
                     </Stack>
                 </CardContent>
@@ -379,15 +429,19 @@ export default function ProfileScreen() {
             </Typography>
             <Card sx={{ mb: 3 }}>
                 <List disablePadding>
-                    <ListItem divider>
+                    <ListItem divider onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
                         <ListItemIcon><NotificationsIcon /></ListItemIcon>
-                        <ListItemText primary="Notificaciones" />
+                        <ListItemText
+                            primary="Notificaciones"
+                            secondary={!editing ? "Toca para cambiar" : null}
+                        />
                         <ListItemSecondaryAction>
                             <Switch
                                 edge="end"
                                 checked={formData.notificaciones}
                                 onChange={(e) => editing && setFormData({ ...formData, notificaciones: e.target.checked })}
                                 disabled={!editing}
+                                sx={{ pointerEvents: !editing ? 'none' : 'auto' }}
                             />
                         </ListItemSecondaryAction>
                     </ListItem>
@@ -399,6 +453,7 @@ export default function ProfileScreen() {
                                 edge="end"
                                 checked={mode === 'dark'}
                                 onChange={toggleTheme}
+                            // Theme is always editable as it's a global preference, unrelated to profile form data
                             />
                         </ListItemSecondaryAction>
                     </ListItem>
@@ -449,16 +504,28 @@ export default function ProfileScreen() {
                         </Button>
                     </>
                 ) : (
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        size="large"
-                        startIcon={<LogoutIcon />}
-                        onClick={handleLogout}
-                        sx={{ bgcolor: 'error.lighter', borderColor: 'error.light' }}
-                    >
-                        Cerrar Sesión
-                    </Button>
+                    <>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            startIcon={<EditIcon />}
+                            onClick={() => setEditing(true)}
+                            sx={{ mb: 2 }}
+                        >
+                            Editar Perfil
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            size="large"
+                            startIcon={<LogoutIcon />}
+                            onClick={handleLogout}
+                            sx={{ bgcolor: 'error.lighter', borderColor: 'error.light' }}
+                        >
+                            Cerrar Sesión
+                        </Button>
+                    </>
                 )}
             </Stack>
 

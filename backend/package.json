@@ -17,7 +17,7 @@
         "docker:build": "docker build -t finanzas-conductor-backend .",
         "docker:run": "docker run -p 5000:5000 finanzas-conductor-backend",
         "docker:compose": "docker-compose up -d",
-        "db:backup": "node src/utils/dbBackup.js",
+        "db:backup": "node src/utils/firestoreBackup.js",
         "db:restore": "node src/utils/dbRestore.js",
         "seed": "node src/utils/seeders.js",
         "migrate": "node src/utils/migrations.js",

@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import { useTheme } from '@mui/material/styles';
+
+
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     AreaChart, Area, PieChart, Pie, Cell, RadialBarChart, RadialBar, Brush
@@ -39,6 +41,8 @@ export default function ChartsDashboard({ transactions = [] }) {
     const [chartType, setChartType] = useState('ingresos_gastos');
     const dashboardRef = useRef(null);
     const { exportAsImage } = useChartExport();
+    const theme = useTheme();
+    const axisColor = theme.palette.mode === 'dark' ? '#E0E0E0' : '#9e9e9e';
 
     const data = transactions.length > 0 ? transactions : sampleData.transacciones;
     const stats = getSummaryStats(data);
@@ -82,7 +86,7 @@ export default function ChartsDashboard({ transactions = [] }) {
         <Card sx={{ minWidth: 200, flex: 1, bgcolor: bgColor, borderLeft: `4px solid ${color}` }}>
             <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'text.secondary' }}>
-                    {icon}
+                    {React.cloneElement(icon, { sx: { ...icon.props.sx, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' } })}
                     <Typography variant="body2" sx={{ ml: 1 }}>{title}</Typography>
                 </Box>
                 <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5, color: 'text.primary' }}>
@@ -113,7 +117,7 @@ export default function ChartsDashboard({ transactions = [] }) {
                     <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}><TrendingUpIcon sx={{ color: 'success.main', fontSize: 16 }} /> vs semana anterior</Box>,
                     <TrendingUpIcon sx={{ color: 'success.main' }} />,
                     chartStyles.colors.success,
-                    '#f0f9f0'
+                    theme.palette.mode === 'dark' ? 'rgba(46, 204, 113, 0.15)' : '#f0f9f0'
                 )}
                 {renderStatsCard(
                     'Gastos',
@@ -122,7 +126,7 @@ export default function ChartsDashboard({ transactions = [] }) {
                     <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}><TrendingDownIcon sx={{ color: 'success.main', fontSize: 16 }} /> vs semana anterior</Box>,
                     <TrendingDownIcon sx={{ color: 'error.main' }} />,
                     chartStyles.colors.danger,
-                    '#fef0f0'
+                    theme.palette.mode === 'dark' ? 'rgba(231, 76, 60, 0.15)' : '#fef0f0'
                 )}
                 {renderStatsCard(
                     'Ganancias',
@@ -131,7 +135,7 @@ export default function ChartsDashboard({ transactions = [] }) {
                     <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}><TrendingUpIcon sx={{ color: 'success.main', fontSize: 16 }} /> vs semana anterior</Box>,
                     <MoneyIcon sx={{ color: 'primary.main' }} />,
                     chartStyles.colors.primary,
-                    '#f0f7fe'
+                    theme.palette.mode === 'dark' ? 'rgba(52, 152, 219, 0.15)' : '#f0f7fe'
                 )}
                 {renderStatsCard(
                     'Viajes',
@@ -140,7 +144,7 @@ export default function ChartsDashboard({ transactions = [] }) {
                     <span>Promedio: {formatMoney(stats.total.ingresos / (data.filter(t => t.tipo === 'ingreso').length || 1))}</span>,
                     <CarIcon sx={{ color: 'info.main' }} />,
                     chartStyles.colors.info,
-                    '#f7f0fe'
+                    theme.palette.mode === 'dark' ? 'rgba(155, 89, 182, 0.15)' : '#f7f0fe'
                 )}
             </Stack>
 
@@ -161,19 +165,21 @@ export default function ChartsDashboard({ transactions = [] }) {
                         ))}
                     </ToggleButtonGroup>
 
-                    <ToggleButtonGroup
-                        value={chartType}
-                        exclusive
-                        onChange={handleChartTypeChange}
-                        size="small"
-                        sx={{ boxShadow: shadows.fab }}
-                    >
-                        <ToggleButton value="ingresos_gastos">Ingresos/Gastos</ToggleButton>
-                        <ToggleButton value="ganancias">Ganancias</ToggleButton>
-                        <ToggleButton value="categorias">Categorías</ToggleButton>
-                        <ToggleButton value="progreso">Progreso</ToggleButton>
-                        <ToggleButton value="apilado">Apilado</ToggleButton>
-                    </ToggleButtonGroup>
+                    <Box sx={{ overflowX: 'auto', maxWidth: '100%', pb: 1 }}>
+                        <ToggleButtonGroup
+                            value={chartType}
+                            exclusive
+                            onChange={handleChartTypeChange}
+                            size="small"
+                            sx={{ boxShadow: shadows.fab, whiteSpace: 'nowrap' }}
+                        >
+                            <ToggleButton value="ingresos_gastos">Ingresos/Gastos</ToggleButton>
+                            <ToggleButton value="ganancias">Ganancias</ToggleButton>
+                            <ToggleButton value="categorias">Categorías</ToggleButton>
+                            <ToggleButton value="progreso">Progreso</ToggleButton>
+                            <ToggleButton value="apilado">Apilado</ToggleButton>
+                        </ToggleButtonGroup>
+                    </Box>
                 </Box>
 
                 <Box sx={{ height: 350, width: '100%' }}>
@@ -181,8 +187,8 @@ export default function ChartsDashboard({ transactions = [] }) {
                         {chartType === 'ingresos_gastos' ? (
                             <BarChart data={barChartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} />
                                 <Tooltip contentStyle={{ ...chartStyles.tooltip, boxShadow: shadows.card }} itemStyle={chartStyles.tooltipText} cursor={{ fill: 'transparent' }} />
                                 <Legend />
                                 <Bar dataKey="ingresos" fill={chartStyles.colors.income} radius={[4, 4, 0, 0]} name="Ingresos" />
@@ -198,15 +204,15 @@ export default function ChartsDashboard({ transactions = [] }) {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} />
                                 <Tooltip contentStyle={{ ...chartStyles.tooltip, boxShadow: shadows.card }} itemStyle={chartStyles.tooltipText} />
                                 <Area type="monotone" dataKey="ganancias" stroke={chartStyles.colors.primary} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias" />
                                 <Brush dataKey="name" height={30} stroke={chartStyles.colors.primary} />
                             </AreaChart>
                         ) : chartType === 'categorias' ? (
                             <Grid container spacing={2} sx={{ height: '100%' }}>
-                                <Grid item xs={6} sx={{ textAlign: 'center', height: '100%' }}>
+                                <Grid item xs={12} md={6} sx={{ textAlign: 'center', height: '100%' }}>
                                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>Gastos</Typography>
                                     <ResponsiveContainer width="100%" height="90%">
                                         <PieChart>
@@ -216,11 +222,11 @@ export default function ChartsDashboard({ transactions = [] }) {
                                                 ))}
                                             </Pie>
                                             <Tooltip contentStyle={{ ...chartStyles.tooltip, boxShadow: shadows.card }} />
-                                            <Legend />
+                                            <Legend wrapperStyle={{ fontSize: '11px', bottom: 0 }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Grid>
-                                <Grid item xs={6} sx={{ textAlign: 'center', height: '100%' }}>
+                                <Grid item xs={12} md={6} sx={{ textAlign: 'center', height: '100%' }}>
                                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>Ingresos</Typography>
                                     <ResponsiveContainer width="100%" height="90%">
                                         <PieChart>
@@ -230,7 +236,7 @@ export default function ChartsDashboard({ transactions = [] }) {
                                                 ))}
                                             </Pie>
                                             <Tooltip contentStyle={{ ...chartStyles.tooltip, boxShadow: shadows.card }} />
-                                            <Legend />
+                                            <Legend wrapperStyle={{ fontSize: '11px', bottom: 0 }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Grid>
@@ -244,8 +250,8 @@ export default function ChartsDashboard({ transactions = [] }) {
                         ) : (
                             <BarChart data={stackedData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9e9e9e', fontSize: 12 }} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: axisColor, fontSize: 12 }} />
                                 <Tooltip contentStyle={{ ...chartStyles.tooltip, boxShadow: shadows.card }} itemStyle={chartStyles.tooltipText} cursor={{ fill: 'transparent' }} />
                                 <Legend />
                                 <Bar dataKey="Viajes" stackId="a" fill={chartStyles.colors.success} radius={[0, 0, 4, 4]} />
@@ -261,21 +267,21 @@ export default function ChartsDashboard({ transactions = [] }) {
             <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 4, boxShadow: shadows.card, border: '1px solid rgba(0,0,0,0.03)' }}>
                 <Typography variant="h6" gutterBottom fontWeight="bold">Tendencias</Typography>
                 <Stack spacing={2}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: '#f8f9fa' } }}>
-                        <Box sx={{ p: 1, bgcolor: '#e8f5e9', borderRadius: '50%' }}>
-                            <TrendingUpIcon color="success" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+                        <Box sx={{ p: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(46, 204, 113, 0.2)' : '#e8f5e9', borderRadius: '50%' }}>
+                            <TrendingUpIcon color="success" sx={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                         </Box>
                         <Typography variant="body2">Ingresos aumentaron <Box component="span" fontWeight="bold" color="success.main">15%</Box> vs semana pasada</Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: '#f8f9fa' } }}>
-                        <Box sx={{ p: 1, bgcolor: '#ffebee', borderRadius: '50%' }}>
-                            <TrendingDownIcon color="error" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+                        <Box sx={{ p: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(231, 76, 60, 0.2)' : '#ffebee', borderRadius: '50%' }}>
+                            <TrendingDownIcon color="error" sx={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                         </Box>
                         <Typography variant="body2">Gastos de gasolina disminuyeron <Box component="span" fontWeight="bold" color="success.main">8%</Box></Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: '#f8f9fa' } }}>
-                        <Box sx={{ p: 1, bgcolor: '#e3f2fd', borderRadius: '50%' }}>
-                            <TrendingUpIcon color="primary" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary', p: 1, borderRadius: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+                        <Box sx={{ p: 1, bgcolor: theme.palette.mode === 'dark' ? 'rgba(41, 98, 255, 0.2)' : '#e3f2fd', borderRadius: '50%' }}>
+                            <TrendingUpIcon color="primary" sx={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                         </Box>
                         <Typography variant="body2">Ganancias netas: <Box component="span" fontWeight="bold" color="primary.main">+22%</Box> este mes</Typography>
                     </Box>
@@ -283,22 +289,27 @@ export default function ChartsDashboard({ transactions = [] }) {
             </Paper>
 
             {/* Insights Card */}
-            <Card sx={{ mb: 3, bgcolor: '#fff9e6', borderLeft: '4px solid #F39C12' }}>
+            <Card sx={{
+                mb: 3,
+                bgcolor: theme.palette.mode === 'dark' ? '#1E1E1E' : '#fff9e6',
+                borderLeft: '4px solid #F39C12',
+                boxShadow: theme.palette.mode === 'dark' ? '0 4px 6px rgba(0,0,0,0.3)' : shadows.card
+            }}>
                 <CardContent>
-                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.mode === 'dark' ? '#F39C12' : 'inherit' }}>
                         <LightbulbIcon sx={{ color: '#F39C12' }} /> Insights del Mes
                     </Typography>
                     <Stack spacing={1}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'start' }}>
                             <LightbulbIcon sx={{ color: '#F39C12', fontSize: 16, mt: 0.5 }} />
-                            <Typography variant="body2" color="text.secondary">
-                                <Box component="span" fontWeight="bold" color="text.primary">Gasolina</Box> representa el <Box component="span" fontWeight="bold" color="text.primary">{((95 / (stats.mes.gastos || 1)) * 100).toFixed(0)}%</Box> de tus gastos este mes.
+                            <Typography variant="body2" color="text.secondary" sx={{ color: theme.palette.mode === 'dark' ? '#ccc' : 'text.secondary' }}>
+                                <Box component="span" fontWeight="bold" color={theme.palette.mode === 'dark' ? '#fff' : 'text.primary'}>Gasolina</Box> representa el <Box component="span" fontWeight="bold" color={theme.palette.mode === 'dark' ? '#fff' : 'text.primary'}>{((95 / (stats.mes.gastos || 1)) * 100).toFixed(0)}%</Box> de tus gastos este mes.
                             </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'start' }}>
                             <LightbulbIcon sx={{ color: '#F39C12', fontSize: 16, mt: 0.5 }} />
-                            <Typography variant="body2" color="text.secondary">
-                                Tu <Box component="span" fontWeight="bold" color="text.primary">mejor día</Box> fue el <Box component="span" fontWeight="bold" color="text.primary">04/01</Box> con <Box component="span" fontWeight="bold" color="text.primary">{formatMoney(220000)}</Box> en ingresos.
+                            <Typography variant="body2" color="text.secondary" sx={{ color: theme.palette.mode === 'dark' ? '#ccc' : 'text.secondary' }}>
+                                Tu <Box component="span" fontWeight="bold" color={theme.palette.mode === 'dark' ? '#fff' : 'text.primary'}>mejor día</Box> fue el <Box component="span" fontWeight="bold" color={theme.palette.mode === 'dark' ? '#fff' : 'text.primary'}>04/01</Box> con <Box component="span" fontWeight="bold" color={theme.palette.mode === 'dark' ? '#fff' : 'text.primary'}>{formatMoney(220000)}</Box> en ingresos.
                             </Typography>
                         </Box>
                     </Stack>

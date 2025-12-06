@@ -66,7 +66,7 @@ export default function StatCard({ title, value, subtitle, icon, theme, to }) {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        {React.cloneElement(icon, { sx: { fontSize: 24, color: textColor } })}
+                        {React.cloneElement(icon, { sx: { fontSize: 24, color: textColor, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' } })}
                     </Box>
                     <ArrowIcon sx={{ opacity: 0.7, color: textColor }} />
                 </Box>

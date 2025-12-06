@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import CarLoader from '../components/CarLoader';
 import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
@@ -53,6 +54,39 @@ export const AuthProvider = ({ children }) => {
 
         return () => unsubscribe();
     }, []);
+
+    // --- Auto Logout Logic (Professional Feature) ---
+    useEffect(() => {
+        if (!user) return; // Only track signed-in users
+
+        const TIMEOUT_MS = 15 * 60 * 1000; // 15 Minutes
+        let idleTimer;
+
+        const resetTimer = () => {
+            if (idleTimer) clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                toast.dismiss(); // Clear any existing toasts
+                toast.error('Sesión cerrada por inactividad');
+                logout(); // Call existing logout function
+            }, TIMEOUT_MS);
+        };
+
+        // Events to track activity
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
+        // Optimize: throttle event listeners or just reset on any
+        const handleActivity = () => resetTimer();
+
+        events.forEach(event => document.addEventListener(event, handleActivity));
+
+        // Start timer initially
+        resetTimer();
+
+        return () => {
+            if (idleTimer) clearTimeout(idleTimer);
+            events.forEach(event => document.removeEventListener(event, handleActivity));
+        };
+    }, [user]); // Re-run when user changes (login/logout)
 
     const signIn = async (email, password) => {
         try {
@@ -122,45 +156,50 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateUserProfile = async (data) => {
+        try {
+            // 1. Si hay cambio de nombre, actualizar Firebase
+            if (data.nombre && auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: data.nombre
+                });
+            }
+
+            // 2. Actualizar base de datos (MongoDB)
+            const response = await client.put('/users/profile', data);
+
+            // 3. Actualizar estado local
+            if (response.data.success) {
+                setUser(prev => ({
+                    ...prev,
+                    ...response.data.data
+                }));
+                return { success: true };
+            } else {
+                throw new Error(response.data.error || 'Error al actualizar perfil');
+            }
+        } catch (error) {
+            console.error('Error updateProfile:', error);
+            // Capturar error de respuesta del backend para mensaje claro
+            const msg = error.response?.data?.error || error.message;
+            toast.error('Error: ' + msg);
+            throw error;
+        }
+    };
+
     const value = {
         user,
         loading,
         signIn,
         signUp,
-        logout
+        logout,
+        updateProfile: updateUserProfile
     };
 
     return (
         <AuthContext.Provider value={value}>
             {loading ? (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    width: '100vw',
-                    backgroundColor: '#f8f9fa'
-                }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <div className="spinner" style={{
-                            border: '4px solid #f3f3f3',
-                            borderTop: '4px solid #3498db',
-                            borderRadius: '50%',
-                            width: '40px',
-                            height: '40px',
-                            animation: 'spin 1s linear infinite',
-                            marginBottom: '1rem',
-                            margin: '0 auto'
-                        }}></div>
-                        <p style={{ fontFamily: 'sans-serif', color: '#666' }}>Cargando FinDriver...</p>
-                        <style>{`
-                            @keyframes spin {
-                                0% { transform: rotate(0deg); }
-                                100% { transform: rotate(360deg); }
-                            }
-                        `}</style>
-                    </div>
-                </div>
+                <CarLoader />
             ) : (
                 children
             )}

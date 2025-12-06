@@ -1,0 +1,189 @@
+{
+  "users": [
+    {
+      "_id": "mock_user_id",
+      "verificado": true,
+      "nombre": "Usuario Mock",
+      "rol": "conductor",
+      "activo": true,
+      "email": "antonio_rburgos@msn.com",
+      "vehiculos": [
+        "cas8EbjabuT7k3D3wYDY"
+      ],
+      "configuracion": {
+        "tema": "claro",
+        "precioCombustible": 14100
+      },
+      "updatedAt": "2025-12-06T07:30:27.776Z"
+    }
+  ],
+  "shifts": [],
+  "transactions": [
+    {
+      "_id": "5fXPU4NvW73Mo41FESWH",
+      "tipo": "gasto",
+      "monto": 35000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T07:00:02.561Z",
+      "gasto": {
+        "litros": 2.48,
+        "precioLitro": 14100,
+        "odometro": 9000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T07:00:03.015Z",
+      "updatedAt": "2025-12-06T07:00:03.015Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "7FVqR2oKXWWUVI6ZmsBD",
+      "tipo": "gasto",
+      "monto": 60000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T06:57:40.045Z",
+      "gasto": {
+        "litros": 4.26,
+        "precioLitro": 14100,
+        "odometro": 90000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T06:57:40.342Z",
+      "updatedAt": "2025-12-06T06:57:40.342Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "KNfgVhT2eX5nBqYeb6b5",
+      "tipo": "gasto",
+      "monto": 60000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T06:59:36.049Z",
+      "gasto": {
+        "litros": 4.26,
+        "precioLitro": 14100,
+        "odometro": 90000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T06:59:38.356Z",
+      "updatedAt": "2025-12-06T06:59:38.356Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "PexjSxGJUwU2vId3YiR5",
+      "tipo": "gasto",
+      "monto": 60000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T06:57:25.806Z",
+      "gasto": {
+        "litros": 4.26,
+        "precioLitro": 14100,
+        "odometro": 90000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T06:57:26.271Z",
+      "updatedAt": "2025-12-06T06:57:26.271Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "W0gQBbrKGDMX5QciVTY7",
+      "tipo": "gasto",
+      "monto": 50000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T07:31:36.262Z",
+      "gasto": {
+        "litros": 3.55,
+        "precioLitro": 14100,
+        "odometro": 91000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T07:31:36.712Z",
+      "updatedAt": "2025-12-06T07:31:36.712Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "WOR4K4jEUZjlRi88BwR6",
+      "tipo": "gasto",
+      "monto": 60000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T06:57:51.663Z",
+      "gasto": {
+        "litros": 4.26,
+        "precioLitro": 14100,
+        "odometro": 90000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T06:57:52.107Z",
+      "updatedAt": "2025-12-06T06:57:52.107Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    },
+    {
+      "_id": "pK9f2aIzs4EWEQWoBzjm",
+      "tipo": "gasto",
+      "monto": 60000,
+      "categoria": "Combustible",
+      "descripcion": "PRUEBA",
+      "fecha": "2025-12-06T06:58:02.514Z",
+      "gasto": {
+        "litros": 4.26,
+        "precioLitro": 14100,
+        "odometro": 90000
+      },
+      "esRecurrente": false,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T06:58:02.941Z",
+      "updatedAt": "2025-12-06T06:58:02.941Z",
+      "plataforma": "particular",
+      "kmRecorridos": 0,
+      "tiempoMinutos": 0
+    }
+  ],
+  "vehicles": [
+    {
+      "_id": "cas8EbjabuT7k3D3wYDY",
+      "marca": "Mi Vehículo",
+      "modelo": "General",
+      "año": 2025,
+      "placa": "TEMPORAL-1765006191309",
+      "tipo": "auto",
+      "principal": true,
+      "userId": "mock_user_id",
+      "createdAt": "2025-12-06T07:29:54.215Z",
+      "activo": true,
+      "costosFijos": {
+        "seguroAnual": 0,
+        "impuestosAnuales": 0,
+        "depreciacionAnual": 0,
+        "sueldoConductorMensual": 0,
+        "planCelularMensual": 0,
+        "otrosMensuales": 0
+      },
+      "estadisticas": {
+        "kilometrajeActual": 90000
+      },
+      "updatedAt": "2025-12-06T07:30:29.164Z"
+    }
+  ]
+}
