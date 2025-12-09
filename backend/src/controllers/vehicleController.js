@@ -223,9 +223,9 @@ exports.getVehicleHealth = async (req, res) => {
                 vehicleId: vehicle._id,
                 vehicleName: `${vehicle.marca} ${vehicle.modelo}`,
                 alertas: alerts,
-                kilometraje: vehicle.estadisticas?.kilometrajeActual || 0,
-                proximoServicio: vehicle.mantenimiento?.proximoServicio || null,
-                kmProximoServicio: vehicle.mantenimiento?.kilometrajeProximoServicio || null
+                kilometraje: (vehicle.estadisticas && vehicle.estadisticas.kilometrajeActual) || 0,
+                proximoServicio: (vehicle.mantenimiento && vehicle.mantenimiento.proximoServicio) || null,
+                kmProximoServicio: (vehicle.mantenimiento && vehicle.mantenimiento.kilometrajeProximoServicio) || null
             }
         });
     } catch (error) {

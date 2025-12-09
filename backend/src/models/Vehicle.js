@@ -143,7 +143,7 @@ class Vehicle {
         const { mantenimiento, seguro, estadisticas, alertas: configAlertas } = this;
 
         // Alert Logic (Copied from previous model)
-        if (mantenimiento?.proximoServicio) {
+        if (mantenimiento && mantenimiento.proximoServicio) {
             const proxDate = new Date(mantenimiento.proximoServicio);
             const diasRestantes = Math.ceil((proxDate - hoy) / (1000 * 60 * 60 * 24));
 
