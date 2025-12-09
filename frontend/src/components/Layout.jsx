@@ -15,7 +15,7 @@ export default function Layout({ children }) {
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
-            minHeight: '100vh',
+
             // bgcolor: 'background.default', // REMOVED: Managed by body/CSS to show background image
             pb: { xs: 7, md: 0 } // Add padding on mobile preventing bottom nav overlap
         }}>
