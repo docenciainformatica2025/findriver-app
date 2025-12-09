@@ -27,7 +27,21 @@ exports.getProfile = async (req, res) => {
 // @access  Private
 exports.updateProfile = async (req, res) => {
     try {
-        const { nombre, telefono, direccion, dni, licenciaConducir, fechaNacimiento, configuracion } = req.body;
+        const {
+            nombre,
+            telefono,
+            direccion,
+            dni,
+            licenciaConducir,
+            fechaNacimiento,
+            configuracion,
+            // Campos de vehículo y costos agregados
+            tipoVehiculo,
+            marca,
+            modelo,
+            placa,
+            costosFijos
+        } = req.body;
 
         // Construir objeto de actualización
         const updateFields = {};
@@ -37,11 +51,24 @@ exports.updateProfile = async (req, res) => {
         if (dni) updateFields.dni = dni;
         if (licenciaConducir) updateFields.licenciaConducir = licenciaConducir;
         if (fechaNacimiento) updateFields.fechaNacimiento = fechaNacimiento;
-        if (configuracion) updateFields.configuracion = configuracion;
+
+        // Campos faltantes agregados
+        if (tipoVehiculo) updateFields.tipoVehiculo = tipoVehiculo;
+        if (marca) updateFields.marca = marca;
+        if (modelo) updateFields.modelo = modelo;
+        if (placa) updateFields.placa = placa;
+        if (costosFijos) updateFields.costosFijos = costosFijos;
+
+        // Manejo seguro de configuración (Dot Notation para Firestore)
+        if (configuracion) {
+            Object.keys(configuracion).forEach(key => {
+                updateFields[`configuracion.${key}`] = configuracion[key];
+            });
+        }
 
         const user = await User.findByIdAndUpdate(
             req.user.id,
-            { $set: updateFields },
+            updateFields, // No usar $set aquí porque User.js ya lo maneja o Firestore lo hace directo
             { new: true, runValidators: true }
         );
 
