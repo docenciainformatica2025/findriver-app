@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import ThreeDLogo from '../components/ThreeDLogo';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -91,13 +92,10 @@ export default function LoginScreen() {
                         backdropFilter: 'blur(10px)'
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <Box sx={{ animation: `${slideInLeft} 1s ease-out`, fontSize: '2.5rem' }}>
-                            🚗
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
+                        <Box sx={{ transform: 'scale(0.5)', mb: -2, mt: -4 }}>
+                            <ThreeDLogo />
                         </Box>
-                        <Typography component="h1" variant="h4" align="center" fontWeight="bold" sx={{ animation: `${fadeIn} 1.2s ease-out` }}>
-                            FinDriver
-                        </Typography>
                     </Box>
                     <Typography variant="body1" color="text.secondary" align="center" mb={3}>
                         Inicia sesión en tu cuenta

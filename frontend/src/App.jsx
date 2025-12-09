@@ -8,6 +8,7 @@ import AddExpenseScreen from './screens/AddExpenseScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import StatsScreen from './screens/StatsScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import NotFoundScreen from './screens/NotFoundScreen';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { FinanceProvider } from './contexts/FinanceContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -41,7 +42,7 @@ const AppContent = () => {
       <Route path="/estadisticas" element={<Layout><StatsScreen /></Layout>} />
       <Route path="/perfil" element={<Layout><ProfileScreen /></Layout>} />
 
-      <Route path="*" element={<div>404 - Página no encontrada</div>} />
+      <Route path="*" element={<NotFoundScreen />} />
     </Routes>
   );
 };

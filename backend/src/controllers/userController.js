@@ -27,7 +27,7 @@ exports.getProfile = async (req, res) => {
 // @access  Private
 exports.updateProfile = async (req, res) => {
     try {
-        const { nombre, telefono, direccion, dni, licenciaConducir, fechaNacimiento } = req.body;
+        const { nombre, telefono, direccion, dni, licenciaConducir, fechaNacimiento, configuracion } = req.body;
 
         // Construir objeto de actualización
         const updateFields = {};
@@ -37,6 +37,7 @@ exports.updateProfile = async (req, res) => {
         if (dni) updateFields.dni = dni;
         if (licenciaConducir) updateFields.licenciaConducir = licenciaConducir;
         if (fechaNacimiento) updateFields.fechaNacimiento = fechaNacimiento;
+        if (configuracion) updateFields.configuracion = configuracion;
 
         const user = await User.findByIdAndUpdate(
             req.user.id,
