@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Home as HomeIcon, SentimentVeryDissatisfied } from '@mui/icons-material';
+import { Home, Commute, MapTwoTone } from '@mui/icons-material';
 
 export default function NotFoundScreen() {
     const navigate = useNavigate();
@@ -19,28 +19,53 @@ export default function NotFoundScreen() {
                     gap: 3
                 }}
             >
-                <SentimentVeryDissatisfied sx={{ fontSize: 100, color: 'text.secondary', opacity: 0.5 }} />
+                <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                    <MapTwoTone sx={{ fontSize: 120, color: 'text.secondary', opacity: 0.3 }} />
+                    <Commute
+                        sx={{
+                            fontSize: 60,
+                            color: 'primary.main',
+                            position: 'absolute',
+                            bottom: 10,
+                            right: -10,
+                            transform: 'rotate(-10deg)'
+                        }}
+                    />
+                </Box>
 
-                <Typography variant="h1" fontWeight="bold" color="primary">
+                <Typography variant="h1" fontWeight="900" sx={{
+                    background: 'linear-gradient(45deg, #2962FF, #00E5FF)',
+                    backgroundClip: 'text',
+                    textFillColor: 'transparent',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                }}>
                     404
                 </Typography>
 
-                <Typography variant="h5" component="h2" gutterBottom>
-                    ¡Ups! Página no encontrada
+                <Typography variant="h4" component="h2" gutterBottom fontWeight="bold">
+                    ¡Te saliste de la ruta!
                 </Typography>
 
-                <Typography variant="body1" color="text.secondary" paragraph sx={{ maxWidth: 500 }}>
-                    La ruta que buscas no existe o ha sido movida. Parece que te has desviado del camino.
+                <Typography variant="body1" color="text.secondary" paragraph sx={{ maxWidth: 500, fontSize: '1.1rem' }}>
+                    Parece que el GPS falló. La ubicación que buscas no existe en nuestro mapa.
+                    Regresa a la base para recargar combustible.
                 </Typography>
 
                 <Button
                     variant="contained"
                     size="large"
-                    startIcon={<HomeIcon />}
+                    startIcon={<Home />}
                     onClick={() => navigate('/dashboard')}
-                    sx={{ borderRadius: 50, px: 4, py: 1.5 }}
+                    sx={{
+                        borderRadius: 50,
+                        px: 5,
+                        py: 1.5,
+                        mt: 2,
+                        boxShadow: '0 4px 14px 0 rgba(41, 98, 255, 0.39)'
+                    }}
                 >
-                    Volver al Inicio
+                    Volver al Dashboard
                 </Button>
             </Box>
         </Container>

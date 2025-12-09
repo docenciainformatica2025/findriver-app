@@ -78,7 +78,8 @@ export default function LoginScreen() {
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         zIndex: -1,
-                        opacity: 0.8
+                        opacity: 1, // Full opacity for the image logic
+                        filter: 'brightness(0.6)' // Darken it specifically here
                     }}
                 />
 
@@ -117,6 +118,7 @@ export default function LoginScreen() {
                             name="email"
                             autoComplete="email"
                             autoFocus
+                            InputLabelProps={{ shrink: true }}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={loading}
@@ -130,6 +132,7 @@ export default function LoginScreen() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            InputLabelProps={{ shrink: true }}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={loading}

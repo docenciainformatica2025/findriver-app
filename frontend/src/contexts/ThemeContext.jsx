@@ -37,7 +37,7 @@ export const CustomThemeProvider = ({ children }) => {
                 dark: '#00B2CC',
             },
             background: {
-                default: mode === 'light' ? '#f4f6f8' : 'transparent', // Transparent to let body bg image show
+                default: mode === 'light' ? '#f4f6f8' : '#121212', // Solid dark background for dashboard
                 paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
             },
             text: {
