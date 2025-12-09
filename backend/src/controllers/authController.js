@@ -235,6 +235,12 @@ exports.login = async (req, res) => {
                         verificado: user.verificado,
                         configuracion: user.configuracion,
                         estadisticas: user.estadisticas,
+                        telefono: user.telefono,
+                        tipoVehiculo: user.tipoVehiculo,
+                        marca: user.marca,
+                        modelo: user.modelo,
+                        placa: user.placa,
+                        costosFijos: user.costosFijos,
                         vehiculos: vehicles
                     },
                     token,
@@ -564,6 +570,13 @@ exports.verifyToken = async (req, res) => {
                     verificado: user.verificado,
                     configuracion: user.configuracion,
                     estadisticas: user.estadisticas,
+                    // Campos extendidos de perfil
+                    telefono: user.telefono,
+                    tipoVehiculo: user.tipoVehiculo,
+                    marca: user.marca,
+                    modelo: user.modelo,
+                    placa: user.placa,
+                    costosFijos: user.costosFijos,
                     vehiculos: vehicles
                 }
             }
