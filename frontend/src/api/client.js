@@ -3,7 +3,7 @@ import { auth } from '../config/firebase';
 
 const client = axios.create({
     // FIX: Use production URL as default if env var is missing
-    baseURL: import.meta.env.VITE_API_URL || 'https://findriver-app.onrender.com/api/v1',
+    baseURL: import.meta.env.VITE_API_URL || 'https://findriver-app.onrender.com/api/v1', // Updated fix
 });
 
 // Interceptor para agregar el token
