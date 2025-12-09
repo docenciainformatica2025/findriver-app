@@ -53,6 +53,38 @@ class Transaction {
         return new Transaction({ _id: id, ...txData });
     }
 
+    static async getTransaccionesPaginadas(userId, page = 1, limit = 20, filtros = {}) {
+        let ref = db.collection('transactions').where('userId', '==', userId);
+
+        // Filters
+        if (filtros.tipo) ref = ref.where('tipo', '==', filtros.tipo);
+        if (filtros.categoria) ref = ref.where('categoria', '==', filtros.categoria);
+
+        // Date Filters
+        if (filtros.fechaInicio) ref = ref.where('fecha', '>=', new Date(filtros.fechaInicio).toISOString());
+        if (filtros.fechaFin) ref = ref.where('fecha', '<=', new Date(filtros.fechaFin).toISOString());
+
+        // Snapshot
+        const snapshot = await ref.orderBy('fecha', 'desc').get();
+        const totalDocs = snapshot.size;
+
+        // Pagination (In-Memory Slicing for safety)
+        const allDocs = snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const paginatedDocs = allDocs.slice(startIndex, endIndex);
+
+        return {
+            transacciones: paginatedDocs,
+            paginacion: {
+                total: totalDocs,
+                page: page,
+                pages: Math.ceil(totalDocs / limit),
+                limit: limit
+            }
+        };
+    }
+
     // Aggregation replacement
     // Since firestore doesn't do complex aggregates, we fetch and reduce in JS
     static async getEstadisticasUsuario(userId, filtros = {}) {
