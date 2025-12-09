@@ -146,6 +146,7 @@ export default function AddIncomeScreen() {
                         type="submit"
                         fullWidth
                         variant="contained"
+                        color="success"
                         size="large"
                         startIcon={<CheckIcon />}
                         disabled={!monto}
