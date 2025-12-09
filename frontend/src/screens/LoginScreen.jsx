@@ -157,7 +157,7 @@ export default function LoginScreen() {
                     </Box>
                 </Paper>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4, mb: 2, fontSize: '0.75rem', opacity: 0.8, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                    Versión 1.1.0-FIX (Health+UI) © 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.
+                    Versión 1.2.0-PRODUCCION (Logo3D + Config) © 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.
                 </Typography>
             </Box>
         </Container>
