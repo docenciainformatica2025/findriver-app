@@ -77,7 +77,7 @@ export default function RealTimeChart() {
                     </Typography>
                     <Chip
                         icon={trend === 'up' ? <TrendingUpIcon /> : <TrendingDownIcon />}
-                        label={`${Math.abs(((currentValue - (data[data.length - 2]?.value || currentValue)) / currentValue) * 100).toFixed(1)}%`}
+                        label={`${Math.abs(((currentValue - (data.length > 1 ? data[data.length - 2].value : currentValue)) / (currentValue || 1)) * 100).toFixed(1)}%`}
                         color={trend === 'up' ? 'success' : 'error'}
                         size="small"
                         sx={{ fontWeight: 'bold' }}

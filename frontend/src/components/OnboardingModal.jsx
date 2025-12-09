@@ -1,57 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogContentText,
     DialogActions,
     Button,
     TextField,
     Box,
+    Typography,
     InputAdornment
 } from '@mui/material';
 import {
+    LocalGasStation as FuelIcon,
     Speed as SpeedIcon
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import client from '../api/client';
 import { toast } from 'react-hot-toast';
 
-export default function OnboardingModal() {
-    const { user } = useAuth();
-    const [open, setOpen] = useState(false);
+export default function OnboardingModal({ open, onClose }) {
+    const { user, updateProfile } = useAuth();
     const [fuelPrice, setFuelPrice] = useState('');
     const [odometer, setOdometer] = useState('');
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (user) {
-            const hasFuelPrice = user.configuracion?.precioCombustible > 0;
-            const hasVehicle = user.vehiculos && user.vehiculos.length > 0;
-
-            // Show modal if critical data is missing
-            if (!hasFuelPrice || !hasVehicle) {
-                setOpen(true);
-            }
-        }
-    }, [user]);
-
     const handleSave = async () => {
-        if (!fuelPrice || !odometer) return;
         setLoading(true);
-
         try {
-            // 1. Update User Config (Fuel Price)
-            await client.put('/users/config', {
+            // 1. Update Profile Config (Fuel Price)
+            const profileUpdates = {
                 configuracion: {
                     ...user.configuracion,
                     precioCombustible: parseFloat(fuelPrice)
                 }
-            });
+            };
+            await updateProfile(profileUpdates);
 
-            // 2. Update or Create Vehicle (Odometer)
+            // 2. Update Vehicle Stats (Odometer)
             if (user.vehiculos && user.vehiculos.length > 0) {
-                // Update principal vehicle
                 const vehicle = user.vehiculos.find(v => v.principal) || user.vehiculos[0];
                 await client.put(`/vehicles/${vehicle._id}`, {
                     estadisticas: {
@@ -59,62 +45,38 @@ export default function OnboardingModal() {
                         kilometrajeActual: parseFloat(odometer)
                     }
                 });
-            } else {
-                // Create new vehicle
-                await client.post('/vehicles', {
-                    marca: 'Mi Vehículo',
-                    modelo: 'General',
-                    año: new Date().getFullYear(),
-                    placa: `TEMPORAL-${Date.now()}`,
-                    tipo: user.tipoVehiculo || 'auto',
-                    principal: true,
-                    estadisticas: {
-                        kilometrajeActual: parseFloat(odometer),
-                        kilometrajeTotal: parseFloat(odometer)
-                    }
-                });
             }
 
-            toast.success('¡Configuración completada!');
-            setOpen(false);
-            // Simple reload to ensure all contexts (Auth, Vehicle) refresh with new data
-            window.location.reload();
+            toast.success('Configuración inicial guardada');
+            onClose();
         } catch (error) {
-            console.error(error);
-            toast.error(`Error: ${error.response?.data?.error || error.message}`);
+            console.error("Error onboarding:", error);
+            toast.error('Error al guardar configuración');
         } finally {
             setLoading(false);
         }
     };
 
-    if (!open) return null;
-
     return (
-        <Dialog
-            open={open}
-            disableEscapeKeyDown
-            fullWidth
-            maxWidth="sm"
-        >
-            <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', pt: 4 }}>
-                🚀 ¡Bienvenido a FinDriver!
+        <Dialog open={open} onClose={() => { }} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+                🚀 Configuración Rápida
             </DialogTitle>
             <DialogContent>
-                <DialogContentText sx={{ textAlign: 'center', mb: 4 }}>
-                    Para comenzar a maximizar tus ganancias, necesitamos 2 datos clave.
-                </DialogContentText>
-
+                <Typography variant="body1" align="center" paragraph>
+                    Para darte estadísticas precisas, necesitamos dos datos clave:
+                </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
                     <TextField
-                        label="Precio Gasolina/Combustible"
+                        label="Precio Combustible (Galón/Litro)"
                         type="number"
                         value={fuelPrice}
                         onChange={(e) => setFuelPrice(e.target.value)}
                         fullWidth
                         InputProps={{
-                            startAdornment: <InputAdornment position="start">$</InputAdornment>
+                            startAdornment: <InputAdornment position="start"><FuelIcon /></InputAdornment>
                         }}
-                        helperText="Precio por galón o unidad de medida"
+                        helperText="Precio actual en tu estación de servicio"
                     />
 
                     <TextField

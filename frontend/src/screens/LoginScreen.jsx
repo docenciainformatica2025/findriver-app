@@ -60,14 +60,35 @@ export default function LoginScreen() {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    animation: `${fadeIn} 0.8s ease-out`,
+                    position: 'relative',
+                    zIndex: 1
                 }}
             >
+                {/* Background Overlay for Login Page */}
+                <Box
+                    sx={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundImage: 'url(/background_pro.png)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        zIndex: -1,
+                        opacity: 0.8
+                    }}
+                />
+
                 <Paper
                     elevation={3}
                     sx={{
                         padding: 4,
                         width: '100%',
                         borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // Slight transparency for glass effect
+                        backdropFilter: 'blur(10px)'
                     }}
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -137,7 +158,7 @@ export default function LoginScreen() {
                         </Link>
                     </Box>
                 </Paper>
-                <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4, mb: 2, fontSize: '0.75rem', opacity: 0.7 }}>
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4, mb: 2, fontSize: '0.75rem', opacity: 0.8, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                     Versión 1.0.2 © 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.
                 </Typography>
             </Box>

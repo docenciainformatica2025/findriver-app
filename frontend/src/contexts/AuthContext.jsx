@@ -117,9 +117,9 @@ export const AuthProvider = ({ children }) => {
             // 4. Crear en MongoDB
             await client.post('/auth/register-firebase', {
                 token,
-                nombre: userInfo.nombre,
                 email: email,
-                rol: 'conductor'
+                rol: 'conductor',
+                ...userInfo // Send full profile data (phone, vehicle, etc.)
             });
 
             toast.success('Registro exitoso');

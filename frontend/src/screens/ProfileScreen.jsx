@@ -41,6 +41,7 @@ import {
     ChevronRight as ChevronRightIcon
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
+import client from '../api/client';
 
 import { useThemeContext } from '../contexts/ThemeContext';
 
@@ -51,78 +52,43 @@ export default function ProfileScreen() {
 
     const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [infoDialog, setInfoDialog] = useState({ open: false, title: '', content: null });
+
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
         tipoVehiculo: '',
+        marca: '',
         modelo: '',
         placa: '',
+        precioCombustible: '',
+        odometer: '',
         notificaciones: true,
-        temaOscuro: false
+        temaOscuro: false,
+        costosFijos: {}
     });
 
+    // Initialize Form Data from User Context
     useEffect(() => {
         if (user) {
             const realName = (user.nombre && user.nombre !== 'Usuario Mock') ? user.nombre : (user.displayName || '');
+            const vehicle = user.vehiculos && user.vehiculos.length > 0 ? (user.vehiculos.find(v => v.principal) || user.vehiculos[0]) : null;
+
             setFormData({
                 nombre: realName,
                 telefono: user?.telefono || '',
                 tipoVehiculo: user?.tipoVehiculo || '',
+                marca: user?.marca || '',
                 modelo: user?.modelo || '',
                 placa: user?.placa || '',
+                precioCombustible: user?.configuracion?.precioCombustible || '',
+                odometer: vehicle?.estadisticas?.kilometrajeActual || '',
                 notificaciones: user?.configuracion?.notificaciones ?? true,
                 temaOscuro: user?.configuracion?.tema === 'oscuro',
                 costosFijos: user?.costosFijos || {}
             });
         }
     }, [user]);
-
-    const handleLogout = async () => {
-        if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-            const result = await logout();
-            if (result.success) {
-                navigate('/login');
-            }
-        }
-    };
-
-    const handleSave = async () => {
-        setLoading(true);
-        try {
-            const updates = {
-                nombre: formData.nombre,
-                telefono: formData.telefono,
-                tipoVehiculo: formData.tipoVehiculo,
-                modelo: formData.modelo,
-                placa: formData.placa,
-                configuracion: {
-                    notificaciones: formData.notificaciones,
-                    tema: formData.temaOscuro ? 'oscuro' : 'claro',
-                    // Preserve existing config like fuel price if not here
-                    ...user.configuracion,
-                },
-                costosFijos: formData.costosFijos
-            };
-
-            // Update user profile/config
-            await updateProfile(updates);
-
-            // If vehicle detail changed, we might need a separate call or handle it in updateProfile
-            // For now, assuming updateProfile handles user data. 
-            // If vehicle data is separate, we'd need:
-            // if (user.vehiculos?.length > 0) { ... update vehicle ... }
-
-            setEditing(false);
-            toast.success('Perfil actualizado correctamente');
-        } catch (error) {
-            console.error(error);
-            toast.error('Error al guardar perfil');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const [infoDialog, setInfoDialog] = useState({ open: false, title: '', content: null });
 
     const handleMenuClick = (item) => {
         let content = null;
@@ -143,7 +109,6 @@ export default function ProfileScreen() {
                 content = (
                     <Typography variant="body2" paragraph>
                         Tus datos están protegidos. No compartimos tu información financiera con terceros.
-                        Para solicitar el borrado de tus datos, contacta a soporte.
                     </Typography>
                 );
                 break;
@@ -154,23 +119,14 @@ export default function ProfileScreen() {
                         <Button variant="contained" color="success" startIcon={<PhoneIcon />} href="https://wa.me/573052357890" target="_blank">
                             WhatsApp Soporte
                         </Button>
-                        <Button variant="outlined" startIcon={<InfoIcon />} href="mailto:docenciainformatica2025@gmail.com">
-                            Enviar Email
-                        </Button>
                     </Stack>
                 );
                 break;
             case 'Acerca de':
                 content = (
                     <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="h6" color="primary" gutterBottom>FinDriver Pro</Typography>
-                        <Typography variant="caption" display="block">Versión 1.0.2</Typography>
-                        <Typography variant="body2" sx={{ mt: 2 }}>
-                            Desarrollado para maximizar las ganancias de los conductores profesionales.
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 4, display: 'block' }}>
-                            © 2025 Ing. Antonio Rodríguez
-                        </Typography>
+                        <Typography variant="h6" color="primary">FinDriver Pro</Typography>
+                        <Typography variant="caption">Versión 1.0.2</Typography>
                     </Box>
                 );
                 break;
@@ -178,6 +134,58 @@ export default function ProfileScreen() {
                 content = <Typography>Opción en desarrollo</Typography>;
         }
         setInfoDialog({ open: true, title: item, content });
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            const updates = {
+                nombre: formData.nombre,
+                telefono: formData.telefono,
+                tipoVehiculo: formData.tipoVehiculo,
+                marca: formData.marca,
+                modelo: formData.modelo,
+                placa: formData.placa,
+                configuracion: {
+                    notificaciones: formData.notificaciones,
+                    tema: formData.temaOscuro ? 'oscuro' : 'claro',
+                    precioCombustible: parseFloat(formData.precioCombustible) || 0,
+                },
+                costosFijos: formData.costosFijos
+            };
+
+            await updateProfile(updates);
+
+            // Update Vehicle Mileage
+            if (formData.odometer && user.vehiculos && user.vehiculos.length > 0) {
+                const vehicle = user.vehiculos.find(v => v.principal) || user.vehiculos[0];
+                try {
+                    await client.put(`/vehicles/${vehicle._id}`, {
+                        estadisticas: {
+                            ...vehicle.estadisticas,
+                            kilometrajeActual: parseFloat(formData.odometer) || 0
+                        }
+                    });
+                } catch (err) {
+                    console.error("Error updating mileage", err);
+                }
+            }
+
+            setEditing(false);
+            toast.success('Perfil actualizado correctamente');
+        } catch (error) {
+            console.error("Error saving profile:", error);
+            toast.error('Error al guardar el perfil');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        if (window.confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+            await logout();
+            navigate('/login');
+        }
     };
 
     const menuItems = [
@@ -271,7 +279,36 @@ export default function ProfileScreen() {
                                     InputProps={{
                                         readOnly: !editing,
                                         disableUnderline: !editing,
-                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                        style: {
+                                            color: 'text.primary',
+                                            fontWeight: editing ? 'normal' : '500',
+                                            pointerEvents: !editing ? 'none' : 'auto'
+                                        }
+                                    }}
+                                />
+                            }
+                        />
+                    </ListItem>
+                    <ListItem divider onClick={() => !editing && setEditing(true)} sx={{ cursor: !editing ? 'pointer' : 'default' }}>
+                        <ListItemIcon><BadgeIcon color="primary" /></ListItemIcon>
+                        <ListItemText
+                            primary="Marca"
+                            secondary={
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    size="small"
+                                    value={formData.marca || ''}
+                                    onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+                                    placeholder="Ej. Chevrolet"
+                                    InputProps={{
+                                        readOnly: !editing,
+                                        disableUnderline: !editing,
+                                        style: {
+                                            color: 'text.primary',
+                                            fontWeight: editing ? 'normal' : '500',
+                                            pointerEvents: !editing ? 'none' : 'auto'
+                                        }
                                     }}
                                 />
                             }
@@ -292,7 +329,11 @@ export default function ProfileScreen() {
                                     InputProps={{
                                         readOnly: !editing,
                                         disableUnderline: !editing,
-                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                        style: {
+                                            color: 'text.primary',
+                                            fontWeight: editing ? 'normal' : '500',
+                                            pointerEvents: !editing ? 'none' : 'auto'
+                                        }
                                     }}
                                 />
                             }
@@ -314,7 +355,11 @@ export default function ProfileScreen() {
                                     InputProps={{
                                         readOnly: !editing,
                                         disableUnderline: !editing,
-                                        style: { color: 'text.primary', fontWeight: editing ? 'normal' : '500' }
+                                        style: {
+                                            color: 'text.primary',
+                                            fontWeight: editing ? 'normal' : '500',
+                                            pointerEvents: !editing ? 'none' : 'auto'
+                                        }
                                     }}
                                 />
                             }
@@ -351,6 +396,48 @@ export default function ProfileScreen() {
                         />
                     </ListItem>
                 </List>
+            </Card>
+
+            {/* Operational Config */}
+            <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, ml: 1, color: 'primary.main' }}>
+                Variables Operativas
+            </Typography>
+            <Card sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
+                <CardContent>
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                        Estos valores se usan para calcular tus ganancias netas diarias.
+                    </Typography>
+                    <Stack spacing={2}>
+                        <TextField
+                            label="Precio Combustible (Galón/Litro)"
+                            type="number"
+                            fullWidth
+                            size="small"
+                            value={formData.precioCombustible}
+                            onChange={(e) => setFormData({ ...formData, precioCombustible: e.target.value })}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
+                        />
+                        <TextField
+                            label="Kilometraje Actual (Odómetro)"
+                            type="number"
+                            fullWidth
+                            size="small"
+                            value={formData.odometer}
+                            onChange={(e) => setFormData({ ...formData, odometer: e.target.value })}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">km</InputAdornment>,
+                                readOnly: !editing
+                            }}
+                            variant={editing ? "outlined" : "filled"}
+                            onClick={() => !editing && setEditing(true)}
+                        />
+                    </Stack>
+                </CardContent>
             </Card>
 
             {/* FinDriver Pro: Costos Fijos */}

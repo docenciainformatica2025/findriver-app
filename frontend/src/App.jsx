@@ -8,15 +8,43 @@ import AddExpenseScreen from './screens/AddExpenseScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import StatsScreen from './screens/StatsScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import { AuthProvider } from './contexts/AuthContext.jsx';
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { FinanceProvider } from './contexts/FinanceContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Toaster } from 'react-hot-toast';
-
-
+import SplashScreen from './components/SplashScreen';
 import { CustomThemeProvider } from './contexts/ThemeContext';
+
+// Logic to show Splash Screen while loading auth
+const AppContent = () => {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <SplashScreen />;
+  }
+
+  return (
+    <Routes>
+      {/* Rutas Públicas */}
+      <Route path="/" element={<LoginScreen />} />
+      <Route path="/login" element={<LoginScreen />} />
+      <Route path="/register" element={<RegisterScreen />} />
+      <Route path="/registro" element={<RegisterScreen />} />
+
+      {/* Rutas Privadas (Inside Layout) */}
+      <Route path="/dashboard" element={<Layout><DashboardScreen /></Layout>} />
+      <Route path="/ingresos" element={<Layout><AddIncomeScreen /></Layout>} />
+      <Route path="/gastos" element={<Layout><AddExpenseScreen /></Layout>} />
+      <Route path="/historial" element={<Layout><HistoryScreen /></Layout>} />
+      <Route path="/estadisticas" element={<Layout><StatsScreen /></Layout>} />
+      <Route path="/perfil" element={<Layout><ProfileScreen /></Layout>} />
+
+      <Route path="*" element={<div>404 - Página no encontrada</div>} />
+    </Routes>
+  );
+};
 
 function App() {
   return (
@@ -50,23 +78,7 @@ function App() {
                   },
                 }}
               />
-              <Routes>
-                {/* Rutas Públicas */}
-                <Route path="/" element={<LoginScreen />} />
-                <Route path="/login" element={<LoginScreen />} />
-                <Route path="/register" element={<RegisterScreen />} />
-                <Route path="/registro" element={<RegisterScreen />} />
-
-                {/* Rutas Privadas (Inside Layout) */}
-                <Route path="/dashboard" element={<Layout><DashboardScreen /></Layout>} />
-                <Route path="/ingresos" element={<Layout><AddIncomeScreen /></Layout>} />
-                <Route path="/gastos" element={<Layout><AddExpenseScreen /></Layout>} />
-                <Route path="/historial" element={<Layout><HistoryScreen /></Layout>} />
-                <Route path="/estadisticas" element={<Layout><StatsScreen /></Layout>} />
-                <Route path="/perfil" element={<Layout><ProfileScreen /></Layout>} />
-
-                <Route path="*" element={<div>404 - Página no encontrada</div>} />
-              </Routes>
+              <AppContent />
             </FinanceProvider>
           </AuthProvider>
         </Router>
