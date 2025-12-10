@@ -24,9 +24,6 @@ router.get('/status', async (req, res) => {
     }
 });
 
-// @route   GET /api/v1/debug/user-data/:email
-// @desc    Inspect raw DB data for a user by email
-// @access  Public (Protected by secret query param for safety in real prod, but simple here)
 router.get('/user-data/:email', async (req, res) => {
     try {
         const { email } = req.params;
@@ -40,17 +37,19 @@ router.get('/user-data/:email', async (req, res) => {
         const userData = userDoc.data();
         const userId = userDoc.id;
 
-        // Fetch last 10 transactions
+        // Fetch last 10 transactions (Optimized to avoid composite index requirement for debug)
         const txSnapshot = await db.collection('transactions')
             .where('userId', '==', userId)
-            .orderBy('fecha', 'desc')
             .limit(10)
-            .get();
+            .get(); // Removed orderBy just to be safe in debug
 
         const transactions = txSnapshot.docs.map(doc => ({
             _id: doc.id,
             ...doc.data()
         }));
+
+        // Manual sort for display
+        transactions.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         // Run Manual Stats Calc
         const startOfDay = new Date();
@@ -77,6 +76,41 @@ router.get('/user-data/:email', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ error: error.message, stack: error.stack });
+    }
+});
+
+// @route   GET /api/v1/debug/diagnose-db
+// @desc    Run the problematic query and return FULL error
+router.get('/diagnose-db', async (req, res) => {
+    try {
+        const testUserId = 'test_user_id';
+
+        // 1. Test Basic Connection
+        const collections = await db.listCollections();
+        const collectionNames = collections.map(c => c.id);
+
+        // 2. Test Transaction Model Logic
+        console.log("Attempting fetch all...");
+        const allSnapshot = await db.collection('transactions').limit(50).get();
+        const docs = allSnapshot.docs.map(d => d.data());
+
+        res.json({
+            success: true,
+            collections: collectionNames,
+            basic_access: 'ok',
+            docs_preview: docs.length,
+            message: 'Database connection and basic queries are working.'
+        });
+
+    } catch (error) {
+        console.error("DIAGNOSTIC ERROR:", error);
+        res.status(500).json({
+            success: false,
+            error_message: error.message,
+            error_code: error.code,
+            error_stack: error.stack,
+            type: 'DIAGNOSTIC_FAILURE'
+        });
     }
 });
 
