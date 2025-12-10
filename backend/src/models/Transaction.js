@@ -61,39 +61,55 @@ class Transaction {
     }
 
     static async getTransaccionesPaginadas(userId, page = 1, limit = 20, filtros = {}) {
-        let ref = db.collection('transactions').where('userId', '==', userId);
+        try {
+            let ref = db.collection('transactions').where('userId', '==', userId);
 
-        // Filters
-        if (filtros.tipo) ref = ref.where('tipo', '==', filtros.tipo);
-        if (filtros.categoria) ref = ref.where('categoria', '==', filtros.categoria);
+            // Filters
+            if (filtros.tipo && filtros.tipo !== 'todos') ref = ref.where('tipo', '==', filtros.tipo);
+            if (filtros.categoria && filtros.categoria !== 'todos') ref = ref.where('categoria', '==', filtros.categoria);
 
-        // Date Filters
-        if (filtros.fechaInicio) ref = ref.where('fecha', '>=', new Date(filtros.fechaInicio).toISOString());
-        if (filtros.fechaFin) ref = ref.where('fecha', '<=', new Date(filtros.fechaFin).toISOString());
-
-        // Snapshot (Remove orderBy to avoid Index errors)
-        const snapshot = await ref.get();
-        const totalDocs = snapshot.size;
-
-        // Pagination (In-Memory Slicing)
-        let allDocs = snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
-
-        // In-memory Sort
-        allDocs.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const paginatedDocs = allDocs.slice(startIndex, endIndex);
-
-        return {
-            transacciones: paginatedDocs,
-            paginacion: {
-                total: totalDocs,
-                page: page,
-                pages: Math.ceil(totalDocs / limit),
-                limit: limit
+            // Date Filters (Strict Validation)
+            if (filtros.fechaInicio && !isNaN(new Date(filtros.fechaInicio))) {
+                ref = ref.where('fecha', '>=', new Date(filtros.fechaInicio).toISOString());
             }
-        };
+            if (filtros.fechaFin && !isNaN(new Date(filtros.fechaFin))) {
+                ref = ref.where('fecha', '<=', new Date(filtros.fechaFin).toISOString());
+            }
+
+            // Safety limit to prevent memory overflow on "Fetch All"
+            // We fetch slightly more than the requested page * limit to try to cover it, 
+            // but for a true fix we need the composite index. 
+            // For now, capping at 500 recent-ish docs (random order) is safer than crashing.
+            // Ideally: await ref.orderBy('fecha', 'desc').limit(limit).get() -> Needs Index.
+
+            const snapshot = await ref.limit(500).get();
+            const totalDocs = snapshot.size;
+
+            // Pagination (In-Memory Slicing)
+            let allDocs = snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
+
+            // In-memory Sort
+            allDocs.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+            const startIndex = (page - 1) * limit;
+            const endIndex = page * limit;
+
+            // Handle bounds
+            const paginatedDocs = allDocs.slice(startIndex, endIndex);
+
+            return {
+                transacciones: paginatedDocs,
+                paginacion: {
+                    total: totalDocs,
+                    page: page,
+                    pages: Math.ceil(totalDocs / limit) || 1,
+                    limit: limit
+                }
+            };
+        } catch (error) {
+            console.error('[Transaction.getTransaccionesPaginadas] Error:', error);
+            throw new Error(`Error getting transactions: ${error.message}`);
+        }
     }
 
     // Aggregation replacement
