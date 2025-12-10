@@ -41,8 +41,8 @@ export default function FixedCostsForm() {
                 addTransaction({
                     tipo: 'gasto',
                     monto: amount,
-                    categoría: category,
-                    descripción: `Costo Fijo Mensual: ${category}`,
+                    categoria: category,
+                    descripcion: `Costo Fijo Mensual: ${category}`,
                     odómetro: 0,
                     fecha: new Date().toISOString()
                 });

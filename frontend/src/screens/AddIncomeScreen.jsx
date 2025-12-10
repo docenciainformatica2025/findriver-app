@@ -42,9 +42,9 @@ export default function AddIncomeScreen() {
         addTransaction({
             tipo: 'ingreso',
             monto: parseFloat(monto),
-            categoría: 'Viaje', // Simplified for income
+            categoria: 'Viaje', // Simplified for income
             plataforma: plataforma,
-            descripción: descripcion || `Viaje ${plataforma}`,
+            descripcion: descripcion || `Viaje ${plataforma}`,
             kmRecorridos: parseFloat(km) || 0,
             fecha: new Date().toISOString()
         });
