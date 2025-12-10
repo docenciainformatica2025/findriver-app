@@ -62,7 +62,10 @@ export default function RealTimeChart() {
     return (
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" fontWeight="bold">Ganancias en Tiempo Real</Typography>
+                <Box>
+                    <Typography variant="h6" fontWeight="bold">Ganancias en Tiempo Real</Typography>
+                    <Chip label="DEMO / SIMULACIÓN" size="small" variant="outlined" color="primary" sx={{ mt: 0.5, fontSize: '0.7rem' }} />
+                </Box>
                 <Box sx={{ textAlign: 'right' }}>
                     <Typography
                         variant="h4"
