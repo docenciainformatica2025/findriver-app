@@ -4,11 +4,15 @@ import { HealthAndSafety, Build, CheckCircle, Warning, Error as ErrorIcon } from
 import client from '../api/client';
 import { formatKm } from '../utils/formatters';
 
+import { useAuth } from '../contexts/AuthContext.jsx';
+
 export default function MaintenanceAlerts() {
+    const { user, loading: authLoading } = useAuth();
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchHealth = async () => {
+        if (!user) return; // Don't fetch if no user
         try {
             const { data } = await client.get('/vehicles/health');
             setHealth(data.data);
@@ -20,8 +24,10 @@ export default function MaintenanceAlerts() {
     };
 
     useEffect(() => {
-        fetchHealth();
-    }, []);
+        if (!authLoading && user) {
+            fetchHealth();
+        }
+    }, [user, authLoading]);
 
     if (loading) return null;
     if (!health) return null;
