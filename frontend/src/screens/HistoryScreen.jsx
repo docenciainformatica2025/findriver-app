@@ -9,15 +9,16 @@ import {
     Card,
     CardContent,
     Stack,
-    Chip
+    Chip,
+    IconButton
 } from '@mui/material';
-import { Download as DownloadIcon } from '@mui/icons-material';
+import { Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 
 moment.locale('es');
 
 export default function HistoryScreen() {
-    const { transactions } = useFinance();
+    const { transactions, deleteTransaction } = useFinance();
 
     const sortedTransactions = [...transactions].sort((a, b) =>
         new Date(b.fecha) - new Date(a.fecha)
@@ -82,7 +83,7 @@ export default function HistoryScreen() {
 
                 {sortedTransactions.map(t => (
                     <Card
-                        key={t.id}
+                        key={t._id || t.id} // Ensure ID access
                         sx={{
                             borderLeft: 6,
                             borderColor: t.tipo === 'ingreso' ? 'success.main' : 'error.main',
@@ -92,23 +93,38 @@ export default function HistoryScreen() {
                         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, '&:last-child': { pb: 2 } }}>
                             <Box>
                                 <Typography variant="subtitle1" fontWeight="bold">
-                                    {t.categoría}
+                                    {t.categoria || t.categoría || 'General'}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    {moment(t.fecha).format('DD/MM/YYYY HH:mm')} • {t.descripción || 'Sin descripción'}
+                                    {moment(t.fecha).format('DD/MM/YYYY HH:mm')} • {t.descripcion || t.descripción || 'Sin descripción'}
                                 </Typography>
                             </Box>
-                            <Box sx={{ textAlign: 'right' }}>
-                                <Typography
-                                    variant="h6"
-                                    fontWeight="bold"
-                                    color={t.tipo === 'ingreso' ? 'success.main' : 'error.main'}
+                            <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box>
+                                    <Typography
+                                        variant="h6"
+                                        fontWeight="bold"
+                                        color={t.tipo === 'ingreso' ? 'success.main' : 'error.main'}
+                                    >
+                                        {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
+                                    </Typography>
+                                    {(t.odometro > 0 || t.odómetro > 0) && (
+                                        <Chip label={`${t.odometro || t.odómetro} km`} size="small" variant="outlined" color="primary" sx={{ mt: 0.5 }} />
+                                    )}
+                                </Box>
+                                <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={async () => {
+                                        if (window.confirm('¿Eliminar esta transacción?')) {
+                                            const res = await deleteTransaction(t._id || t.id);
+                                            if (res.success) toast.success('Eliminado');
+                                            else toast.error(res.error || 'Error al eliminar');
+                                        }
+                                    }}
                                 >
-                                    {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
-                                </Typography>
-                                {t.odómetro > 0 && (
-                                    <Chip label={`${t.odómetro} km`} size="small" variant="outlined" color="primary" sx={{ mt: 0.5 }} />
-                                )}
+                                    <DeleteIcon />
+                                </IconButton>
                             </Box>
                         </CardContent>
                     </Card>
