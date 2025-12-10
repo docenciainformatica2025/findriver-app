@@ -239,6 +239,46 @@ class User {
     // Note: Firestore always fetches full doc, this is just for return obj filtering if needed
     // But since we attach methods to the object, return `this` is usually fine.
     // For password selection logic, we already loaded it in `findById/findOne`.
+    async getResumenHoy() {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        try {
+            const snapshot = await db.collection('transactions')
+                .where('userId', '==', this._id)
+                .where('fecha', '>=', startOfDay.toISOString())
+                .where('fecha', '<=', endOfDay.toISOString())
+                .get();
+
+            let ingresos = 0;
+            let gastos = 0;
+            let viajes = 0;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.tipo === 'ingreso') {
+                    ingresos += data.monto || 0;
+                    viajes++;
+                } else if (data.tipo === 'gasto') {
+                    gastos += data.monto || 0;
+                }
+            });
+
+            return {
+                ingresos,
+                gastos,
+                ganancia: ingresos - gastos,
+                viajes
+            };
+        } catch (error) {
+            console.error('Error en getResumenHoy:', error);
+            return { ingresos: 0, gastos: 0, ganancia: 0, viajes: 0 };
+        }
+    }
+
     async actualizarEstadisticas() {
         // Placeholder for statistics update logic
         // This prevents the "user.actualizarEstadisticas is not a function" error
