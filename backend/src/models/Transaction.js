@@ -71,12 +71,16 @@ class Transaction {
         if (filtros.fechaInicio) ref = ref.where('fecha', '>=', new Date(filtros.fechaInicio).toISOString());
         if (filtros.fechaFin) ref = ref.where('fecha', '<=', new Date(filtros.fechaFin).toISOString());
 
-        // Snapshot
-        const snapshot = await ref.orderBy('fecha', 'desc').get();
+        // Snapshot (Remove orderBy to avoid Index errors)
+        const snapshot = await ref.get();
         const totalDocs = snapshot.size;
 
-        // Pagination (In-Memory Slicing for safety)
-        const allDocs = snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
+        // Pagination (In-Memory Slicing)
+        let allDocs = snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
+
+        // In-memory Sort
+        allDocs.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
         const startIndex = (page - 1) * limit;
         const endIndex = page * limit;
         const paginatedDocs = allDocs.slice(startIndex, endIndex);
