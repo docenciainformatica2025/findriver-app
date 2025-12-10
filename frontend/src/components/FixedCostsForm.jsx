@@ -33,32 +33,41 @@ export default function FixedCostsForm() {
         setCosts(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        let count = 0;
+        const promises = [];
+        const activeCosts = [];
+
         Object.entries(costs).forEach(([category, amount]) => {
             if (amount > 0) {
-                addTransaction({
+                activeCosts.push(category);
+                promises.push(addTransaction({
                     tipo: 'gasto',
                     monto: amount,
                     categoria: category,
                     descripcion: `Costo Fijo Mensual: ${category}`,
                     odómetro: 0,
                     fecha: new Date().toISOString()
-                });
-                count++;
+                }));
             }
         });
 
-        if (count > 0) {
-            toast.success('Costos fijos registrados correctamente');
-            setIsOpen(false);
-            setCosts({
-                Seguro: 0,
-                Impuestos: 0,
-                Depreciación: 0,
-                'Plan de Datos': 0
-            });
+        if (promises.length > 0) {
+            const results = await Promise.all(promises);
+            const failures = results.filter(r => !r.success);
+
+            if (failures.length === 0) {
+                toast.success('Costos fijos registrados correctamente');
+                setIsOpen(false);
+                setCosts({
+                    Seguro: 0,
+                    Impuestos: 0,
+                    Depreciación: 0,
+                    'Plan de Datos': 0
+                });
+            } else {
+                toast.error(`Error al registrar ${failures.length} gastos. Revise su conexión.`);
+            }
         }
     };
 

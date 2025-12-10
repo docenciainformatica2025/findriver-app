@@ -35,11 +35,11 @@ export default function AddIncomeScreen() {
         { label: 'Particular', value: 'particular' }
     ];
 
-    const registrarIngreso = (e) => {
+    const registrarIngreso = async (e) => {
         e.preventDefault();
         if (!monto) return;
 
-        addTransaction({
+        const result = await addTransaction({
             tipo: 'ingreso',
             monto: parseFloat(monto),
             categoria: 'Viaje', // Simplified for income
@@ -49,11 +49,15 @@ export default function AddIncomeScreen() {
             fecha: new Date().toISOString()
         });
 
-        setMonto('');
-        setDescripcion('');
-        setKm('');
-        toast.success('Ingreso registrado correctamente');
-        navigate('/dashboard');
+        if (result.success) {
+            setMonto('');
+            setDescripcion('');
+            setKm('');
+            toast.success('Ingreso registrado correctamente');
+            navigate('/dashboard');
+        } else {
+            toast.error(result.error || 'Error al registrar ingreso');
+        }
     };
 
     return (

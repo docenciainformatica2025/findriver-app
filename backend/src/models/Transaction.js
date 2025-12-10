@@ -49,8 +49,15 @@ class Transaction {
             }
         }
 
-        await db.collection('transactions').doc(id).set(txData);
-        return new Transaction({ _id: id, ...txData });
+        try {
+            console.log(`[Transaction] Attempting to save transaction ${id} for user ${txData.userId}`);
+            await db.collection('transactions').doc(id).set(txData);
+            console.log(`[Transaction] Success saving transaction ${id}`);
+            return new Transaction({ _id: id, ...txData });
+        } catch (error) {
+            console.error(`[Transaction] ERROR saving transaction ${id}:`, error);
+            throw error;
+        }
     }
 
     static async getTransaccionesPaginadas(userId, page = 1, limit = 20, filtros = {}) {
