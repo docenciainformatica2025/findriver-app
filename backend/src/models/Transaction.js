@@ -27,6 +27,34 @@ class Transaction {
         return snapshot.docs.map(doc => new Transaction({ _id: doc.id, ...doc.data() }));
     }
 
+    static async findOne(query) {
+        // Handle _id query specifically
+        if (query._id) {
+            const doc = await db.collection('transactions').doc(query._id).get();
+            if (!doc.exists) return null;
+            const data = doc.data();
+            // Verify other query params match
+            if (query.userId && data.userId !== query.userId) return null;
+            return new Transaction({ _id: doc.id, ...data });
+        }
+
+        // Fallback for non-ID queries
+        const results = await this.find(query);
+        return results[0] || null;
+    }
+
+    static async findById(id) {
+        const doc = await db.collection('transactions').doc(id).get();
+        if (!doc.exists) return null;
+        return new Transaction({ _id: doc.id, ...doc.data() });
+    }
+
+    async deleteOne() {
+        if (!this._id) throw new Error('Transaction ID references missing');
+        await db.collection('transactions').doc(this._id).delete();
+        return true;
+    }
+
     static async create(data) {
         const id = db.collection('transactions').doc().id;
         const txData = {
