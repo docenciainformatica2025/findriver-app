@@ -54,44 +54,43 @@ export function useAdvancedCalculations() {
         // Rentabilidad por Km
         const ingresoPorKm = totalKmHoy > 0 ? (totalIngresosHoy / totalKmHoy) : 0;
 
+        // 5. Historical/Global Metrics (From all loaded transactions)
+        // This failsafe ensures cards aren't empty if "Today" has no data yet.
+        const totalIngresosHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
+        const totalGastosHist = transactions.filter(t => t.tipo === 'gasto').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
+        const totalKmHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.montoKms) || Number(t.kmRecorridos) || Number(t.distanciaViaje) || 0), 0);
+
+        // Calculate Costos Fijos portion for the loaded period? 
+        // Hard to estimate exact fixed cost for "random 50 transactions".
+        // Simplified Global CPK: (Total Var Expenses / Total Km)
+        // Ideally: (Total Var + (DailyFixed * DaysSpanned)) / Total Km
+        const txDates = transactions.map(t => moment(t.fecha));
+        const daysSpanned = txDates.length > 0 ? moment.max(txDates).diff(moment.min(txDates), 'days') + 1 : 1;
+        const estimatedFixedCostHist = dailyFixedCost * daysSpanned;
+
+        const cpkGlobal = totalKmHist > 0 ? ((totalGastosHist + estimatedFixedCostHist) / totalKmHist) : 0;
+        const gananciaGlobal = totalIngresosHist - (totalGastosHist + estimatedFixedCostHist);
+
         return {
-            // 5. Historical/Global Metrics (From all loaded transactions)
-            // This failsafe ensures cards aren't empty if "Today" has no data yet.
-            const totalIngresosHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
-            const totalGastosHist = transactions.filter(t => t.tipo === 'gasto').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
-            const totalKmHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.montoKms) || Number(t.kmRecorridos) || Number(t.distanciaViaje) || 0), 0);
-
-            // Calculate Costos Fijos portion for the loaded period? 
-            // Hard to estimate exact fixed cost for "random 50 transactions".
-            // Simplified Global CPK: (Total Var Expenses / Total Km)
-            // Ideally: (Total Var + (DailyFixed * DaysSpanned)) / Total Km
-            const txDates = transactions.map(t => moment(t.fecha));
-            const daysSpanned = txDates.length > 0 ? moment.max(txDates).diff(moment.min(txDates), 'days') + 1 : 1;
-            const estimatedFixedCostHist = dailyFixedCost * daysSpanned;
-
-            const cpkGlobal = totalKmHist > 0 ? ((totalGastosHist + estimatedFixedCostHist) / totalKmHist) : 0;
-            const gananciaGlobal = totalIngresosHist - (totalGastosHist + estimatedFixedCostHist);
-
-            return {
-                dailyFixedCost,
-                totalIngresosHoy,
-                totalGastosVariablesHoy,
-                totalCostosHoy,
-                gananciaNetaHoy,
-                kmRecorridosHoy,
-                cpkReal,
-                cpkGlobal, // Exporting the new metric
-                gananciaGlobal,
-                ingresoPorKm,
-                viajesHoy: incomesHoy.length,
-                // Platform breakdown
-                byPlatform: {
-                    uber: incomesHoy.filter(t => t.plataforma === 'uber').reduce((acc, t) => acc + t.monto, 0),
-                    didi: incomesHoy.filter(t => t.plataforma === 'didi').reduce((acc, t) => acc + t.monto, 0),
-                    indrive: incomesHoy.filter(t => t.plataforma === 'indrive').reduce((acc, t) => acc + t.monto, 0),
-                }
-            };
-        }, [transactions, user]);
+            dailyFixedCost,
+            totalIngresosHoy,
+            totalGastosVariablesHoy,
+            totalCostosHoy,
+            gananciaNetaHoy,
+            kmRecorridosHoy,
+            cpkReal,
+            cpkGlobal,
+            gananciaGlobal,
+            ingresoPorKm,
+            viajesHoy: incomesHoy.length,
+            // Platform breakdown
+            byPlatform: {
+                uber: incomesHoy.filter(t => t.plataforma === 'uber').reduce((acc, t) => acc + t.monto, 0),
+                didi: incomesHoy.filter(t => t.plataforma === 'didi').reduce((acc, t) => acc + t.monto, 0),
+                indrive: incomesHoy.filter(t => t.plataforma === 'indrive').reduce((acc, t) => acc + t.monto, 0),
+            }
+        };
+    }, [transactions, user]);
 
     return metrics;
 }
