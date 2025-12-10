@@ -1,21 +1,16 @@
 const axios = require('axios');
 
-const API_URL = 'https://findriver-app.onrender.com/api/v1/debug/diagnose-db';
+const API_URL = 'https://findriver-app.onrender.com/api/v1/debug/status';
 
-async function diagnose() {
-    console.log('Running remote diagnosis on:', API_URL);
+async function checkVersion() {
+    console.log('Checking Server Version on:', API_URL);
     try {
         const response = await axios.get(API_URL);
-        console.log('Diagnosis Success:', JSON.stringify(response.data, null, 2));
+        console.log('Server Status:', JSON.stringify(response.data, null, 2));
     } catch (error) {
-        if (error.response) {
-            console.error('Diagnosis Failed (Expected 500?):');
-            console.error('Status:', error.response.status);
-            console.error('Data:', JSON.stringify(error.response.data, null, 2));
-        } else {
-            console.error('Network Error:', error.message);
-        }
+        console.error('Check Failed:', error.message);
+        if (error.response) console.error('Data:', error.response.data);
     }
 }
 
-diagnose();
+checkVersion();

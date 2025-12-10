@@ -38,6 +38,8 @@ export default function DashboardScreen() {
         totalCostosHoy,
         gananciaNetaHoy,
         cpkReal,
+        cpkGlobal, // New
+        gananciaGlobal, // New
         ingresoPorKm,
         viajesHoy,
         dailyFixedCost
@@ -159,8 +161,8 @@ export default function DashboardScreen() {
                     </Grid>
                     <Grid item xs={12} sm={6} lg={3}>
                         <StatCard
-                            title="CPK (Costo/Km)"
-                            value={formatMoney(cpkReal)}
+                            title="CPK (Promedio)"
+                            value={formatMoney(cpkReal > 0 ? cpkReal : cpkGlobal)}
                             icon={<CarIcon />}
                             theme={cardThemes.info} // Blue/Indigo theme
                             to="/estadisticas"
