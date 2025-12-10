@@ -83,7 +83,12 @@ export default function CategoryCharts({ transactions = [], onOpenAdvanced }) {
         const normalizeCategory = (cat) => {
             if (!cat) return 'otros';
             const lower = cat.toLowerCase();
+
             if (lower.includes('peaje')) return 'peajes';
+            if (lower.includes('gasolina') || lower.includes('combustible')) return 'gasolina';
+            if (lower.includes('comida') || lower.includes('alimentacion') || lower.includes('alimentos')) return 'comida';
+            if (lower.includes('mantenimiento') || lower.includes('taller') || lower.includes('reparacion') || lower.includes('aceite')) return 'mantenimiento';
+
             if (result[lower]) return lower;
             return 'otros';
         };
