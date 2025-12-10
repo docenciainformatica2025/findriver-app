@@ -28,6 +28,7 @@ import { gradients, cardStyles, shadows, cardThemes } from '../utils/themeUtils'
 import MaintenanceAlerts from '../components/MaintenanceAlerts';
 import StatCard from '../components/StatCard';
 import OnboardingModal from '../components/OnboardingModal';
+import RecentTransactions from '../components/RecentTransactions';
 import { formatMoney } from '../utils/formatters';
 
 export default function DashboardScreen() {
@@ -123,26 +124,7 @@ export default function DashboardScreen() {
                         <MaintenanceAlerts />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Paper
-                            sx={{
-                                p: 3,
-                                borderRadius: 4,
-                                height: '100%',
-                                background: 'linear-gradient(to right, #ffffff, #f8f9fa)',
-                                border: '1px solid rgba(0,0,0,0.02)',
-                                boxShadow: shadows.card,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <Typography variant="h6" gutterBottom fontWeight="bold" color="primary.main">
-                                🚀 Panel de Control
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                Gestiona tus finanzas de manera inteligente. Utiliza los botones flotantes para registrar movimientos.
-                            </Typography>
-                        </Paper>
+                        <RecentTransactions />
                     </Grid>
 
                     <Grid item xs={12} sm={6} lg={3}>
@@ -157,7 +139,7 @@ export default function DashboardScreen() {
                     </Grid>
                     <Grid item xs={12} sm={6} lg={3}>
                         <StatCard
-                            title="Gastos Totales"
+                            title="Gastos Hoy"
                             value={formatMoney(totalCostosHoy)}
                             icon={<TrendingDownIcon />}
                             theme={cardThemes.error}
