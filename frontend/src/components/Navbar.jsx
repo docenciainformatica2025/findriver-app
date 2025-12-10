@@ -23,6 +23,15 @@ export default function Navbar() {
                         <Button color="inherit" onClick={() => navigate('/dashboard')} sx={{ fontWeight: 600 }}>
                             Dashboard
                         </Button>
+                        <Button color="inherit" onClick={() => navigate('/estadisticas')} sx={{ fontWeight: 600 }}>
+                            Estadísticas
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/historial')} sx={{ fontWeight: 600 }}>
+                            Historial
+                        </Button>
+                        <Button color="inherit" onClick={() => navigate('/perfil')} sx={{ fontWeight: 600 }}>
+                            Perfil
+                        </Button>
                         <Button color="inherit" onClick={handleLogout} sx={{ fontWeight: 600, color: '#DC2626' }}>
                             Salir
                         </Button>
