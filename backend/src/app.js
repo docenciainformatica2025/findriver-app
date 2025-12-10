@@ -79,15 +79,23 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Rutas de la API
+// Rutas
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
-app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/stats', statsRoutes);
+app.use('/api/v1/shifts', shiftRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
-app.use('/api/v1/shifts', require('./routes/shiftRoutes'));
-app.use('/api/v1/stats', require('./routes/statsRoutes')); // Added Stats Routes // Added Shift Routes
+app.use('/api/v1/reports', reportRoutes);
+
+// Rutas de diagnóstico
+app.use('/api/v1/debug', require('./routes/debugRoutes'));
+
+// Ruta base
+app.get('/', (req, res) => {
+    res.send('API FinDriver Pro funcionando 🚀 v1.2.0');
+});
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
