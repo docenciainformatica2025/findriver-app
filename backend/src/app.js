@@ -19,6 +19,8 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const statsRoutes = require('./routes/statsRoutes');
+const shiftRoutes = require('./routes/shiftRoutes');
 
 // Importar middlewares
 const errorHandler = require('./middlewares/errorHandler');
