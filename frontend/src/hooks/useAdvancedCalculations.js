@@ -72,9 +72,19 @@ export function useAdvancedCalculations() {
         const cpkGlobal = backendCpk;
 
         // --- DAILY METRICS FROM BACKEND DIRECTLY ---
-        // Backend now provides 'today' object. This avoids Timezone Mismatches.
-        const backendToday = backendStats?.today || {};
-        const backendTodayKm = Number(backendToday.totalKm) || 0;
+        // ROBUST FIX: Search 'history' array for the Client's Local Date key.
+        let backendTodayKm = 0;
+
+        const localDateKey = today.format('YYYY-MM-DD');
+        const historyEntry = (backendStats?.history || []).find(d => d.date === localDateKey);
+
+        if (historyEntry) {
+            backendTodayKm = Number(historyEntry.totalKm) || 0;
+        } else {
+            // Fallback to explicit 'today' object if history search fails
+            const backendToday = backendStats?.today || {};
+            backendTodayKm = Number(backendToday.totalKm) || 0;
+        }
 
         // Rentabilidad por Km
         const activeKm = backendTodayKm > 0 ? backendTodayKm : (kmRecorridosHoy > 0 ? kmRecorridosHoy : 0);
