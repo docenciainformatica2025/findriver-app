@@ -123,15 +123,22 @@ export default function HistoryScreen() {
                                     >
                                         {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
                                     </Typography>
-                                    {(t.odometro > 0 || t.odómetro > 0 || t.kmRecorridos > 0 || t.distanciaViaje > 0) && (
-                                        <Chip
-                                            label={`${t.odometro || t.odómetro || t.kmRecorridos || t.distanciaViaje} km`}
-                                            size="small"
-                                            variant="outlined"
-                                            color="primary"
-                                            sx={{ mt: 0.5 }}
-                                        />
-                                    )}
+                                    {/* Handle various Km sources (flat or nested) */}
+                                    {(() => {
+                                        const km = t.odometro || t.odómetro || t.kmRecorridos || t.distanciaViaje || t.gasto?.odometro || t.gasto?.odómetro;
+                                        if (km > 0) {
+                                            return (
+                                                <Chip
+                                                    label={`${km} km`}
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="primary"
+                                                    sx={{ mt: 0.5 }}
+                                                />
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </Box>
                                 <IconButton
                                     size="small"
