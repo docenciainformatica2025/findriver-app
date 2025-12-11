@@ -38,16 +38,19 @@ export default function FixedCostsForm() {
         const promises = [];
         const activeCosts = [];
 
-        Object.entries(costs).forEach(([category, amount]) => {
+        Object.entries(costs).forEach(([label, amount]) => {
             if (amount > 0) {
-                activeCosts.push(category);
+                // Map the fixed cost label to the 'Otros' category to match Analysis tabs
+                // The specific label (Seguro, Plan) goes into Description.
+                activeCosts.push(label);
                 promises.push(addTransaction({
                     tipo: 'gasto',
                     monto: amount,
-                    categoria: category,
-                    descripcion: `Costo Fijo Mensual: ${category}`,
+                    categoria: 'Otros',  // Standardized Category
+                    descripcion: `Costo Fijo: ${label}`,
                     odómetro: 0,
-                    fecha: new Date().toISOString()
+                    fecha: new Date().toISOString(),
+                    esFijo: true // Flag for future filtering if needed
                 }));
             }
         });
