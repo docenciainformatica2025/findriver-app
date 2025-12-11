@@ -40,7 +40,10 @@ exports.updateProfile = async (req, res) => {
             marca,
             modelo,
             placa,
-            costosFijos
+            costosFijos,
+            // Goal Tracker Fields
+            dailyGoal,
+            dailyGoalDate
         } = req.body;
 
         // Construir objeto de actualización
@@ -58,6 +61,10 @@ exports.updateProfile = async (req, res) => {
         if (modelo) updateFields.modelo = modelo;
         if (placa) updateFields.placa = placa;
         if (costosFijos) updateFields.costosFijos = costosFijos;
+
+        // Goal Fields
+        if (dailyGoal !== undefined) updateFields.dailyGoal = Number(dailyGoal);
+        if (dailyGoalDate) updateFields.dailyGoalDate = dailyGoalDate;
 
         // Manejo seguro de configuración (Dot Notation para Firestore)
         if (configuracion) {
