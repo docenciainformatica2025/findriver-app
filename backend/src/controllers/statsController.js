@@ -23,14 +23,20 @@ exports.getCPKStats = async (req, res) => {
         const endIso = end.toISOString();
 
         // 1. Obtener Transacciones (In-Memory Aggregation)
-        // Firestore no soporta aggregate complejo nativamente en wrapper, fetching raw
+        // Firestore requires composite index for Range + Equality. To avoid this dependency,
+        // we fetch by userId (Equality) and filter range in memory.
         const txSnap = await db.collection('transactions')
             .where('userId', '==', userId)
-            .where('fecha', '>=', startIso)
-            .where('fecha', '<=', endIso)
+            // .where('fecha', '>=', startIso) // Removed to avoid index error
+            // .where('fecha', '<=', endIso)   // Removed to avoid index error
             .get();
 
-        const transactions = txSnap.docs.map(doc => doc.data());
+        const transactions = txSnap.docs
+            .map(doc => doc.data())
+            .filter(tx => {
+                const txDate = tx.fecha || new Date().toISOString();
+                return txDate >= startIso && txDate <= endIso;
+            });
 
         // Procesar transacciones en memoria
         const totals = {
@@ -78,12 +84,22 @@ exports.getCPKStats = async (req, res) => {
         // 2. Obtener Jornadas (Shifts) para Km
         const shiftSnap = await db.collection('shifts')
             .where('userId', '==', userId)
-            .where('fechaInicio', '>=', startIso)
-            .where('fechaInicio', '<=', endIso)
-            .where('estado', '==', 'cerrado')
+            // .where('fechaInicio', '>=', startIso) // Removed
+            // .where('estado', '==', 'cerrado')     // Removed
             .get();
 
-        const shifts = shiftSnap.docs.map(doc => doc.data());
+        const shifts = shiftSnap.docs
+            .map(doc => doc.data())
+            .filter(shift => {
+                // In-memory filter
+                const sDate = shift.fechaInicio;
+                const matchesDate = sDate >= startIso && sDate <= endIso;
+                const matchesStatus = shift.estado === 'cerrado';
+                return matchesDate && matchesStatus;
+            });
+
+
+
 
         const shiftStats = shifts.reduce((acc, curr) => ({
             totalKm: acc.totalKm + (curr.totalKm || 0),
