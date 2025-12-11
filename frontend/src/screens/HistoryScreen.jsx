@@ -69,8 +69,21 @@ export default function HistoryScreen() {
         if (cat.includes('manten')) return 'Mantenimiento';
 
         // 2. For Incomes, prioritize Platform name
-        if (t.tipo === 'ingreso' && t.plataforma) {
-            return t.plataforma.charAt(0).toUpperCase() + t.plataforma.slice(1);
+        // Check explicit field first
+        if (t.tipo === 'ingreso') {
+            if (t.plataforma && t.plataforma !== 'particular') {
+                return t.plataforma.charAt(0).toUpperCase() + t.plataforma.slice(1);
+            }
+
+            // Fallback: Detect platform from description (e.g. "Viaje uber")
+            const desc = (t.descripcion || t.descripción || '').toLowerCase();
+            if (desc.includes('uber')) return 'Uber';
+            if (desc.includes('didi')) return 'Didi';
+            if (desc.includes('indrive')) return 'InDrive';
+            if (desc.includes('picap')) return 'Picap';
+
+            // If genuinely particular (or default), show specific label if possible or 'Particular'
+            if (t.plataforma === 'particular') return 'Particular';
         }
 
         // 3. Fallback: Capitalize Category
