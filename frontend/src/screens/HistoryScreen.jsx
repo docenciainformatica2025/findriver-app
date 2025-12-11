@@ -133,7 +133,7 @@ export default function HistoryScreen() {
                                     </Typography>
                                     {/* Handle various Km sources (flat or nested) */}
                                     {(() => {
-                                        const km = t.odometro || t.odómetro || t.kmRecorridos || t.distanciaViaje || t.gasto?.odometro || t.gasto?.odómetro;
+                                        const km = t.odometro || t.odómetro || t.kmRecorridos || t.distanciaViaje || t.viaje?.distanciaKm || t.gasto?.odometro || t.gasto?.odómetro;
                                         if (km > 0) {
                                             return (
                                                 <Chip
