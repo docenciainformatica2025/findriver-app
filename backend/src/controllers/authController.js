@@ -576,7 +576,10 @@ exports.verifyToken = async (req, res) => {
                     marca: user.marca,
                     modelo: user.modelo,
                     placa: user.placa,
+                    placa: user.placa,
                     costosFijos: user.costosFijos,
+                    dailyGoal: user.dailyGoal,
+                    dailyGoalDate: user.dailyGoalDate,
                     vehiculos: vehicles
                 }
             }
