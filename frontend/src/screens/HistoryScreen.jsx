@@ -105,16 +105,24 @@ export default function HistoryScreen() {
                             borderRadius: 2
                         }}
                     >
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, '&:last-child': { pb: 2 } }}>
-                            <Box>
-                                <Typography variant="subtitle1" fontWeight="bold">
+                        <CardContent sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            p: 2,
+                            '&:last-child': { pb: 2 },
+                            flexWrap: 'wrap', // Allow wrapping on small screens
+                            gap: 1 // Add gap for wrapped items
+                        }}>
+                            <Box sx={{ minWidth: 0, flex: 1 }}> {/* MinWidth 0 for text truncation */}
+                                <Typography variant="subtitle1" fontWeight="bold" noWrap>
                                     {getDisplayTitle(t)}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2" color="text.secondary" noWrap>
                                     {moment(t.fecha).format('DD/MM/YYYY HH:mm')} • {t.descripcion || t.descripción || 'Sin descripción'}
                                 </Typography>
                             </Box>
-                            <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                                 <Box>
                                     <Typography
                                         variant="h6"
