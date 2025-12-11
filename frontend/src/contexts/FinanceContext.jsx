@@ -61,58 +61,58 @@ export const FinanceProvider = ({ children }) => {
                 // Ensure kmRecorridos is passed if present
                 if (transaction.kmRecorridos) {
                     payload.kmRecorridos = transaction.kmRecorridos;
-                    if (transaction.kmRecorridos) {
-                        payload.kmRecorridos = transaction.kmRecorridos;
-                        // Also populate viaje structure if needed strictly by backend logic
-                        payload.viaje = {
-                            ...payload.viaje,
-                            distanciaKm: transaction.kmRecorridos,
-                            // Defaults to satisfy legacy validations (if any)
-                            origen: payload.viaje?.origen || 'Ubicación actual',
-                            destino: payload.viaje?.destino || 'Destino'
-                        };
-                    } else if (transaction.tipo === 'ingreso') {
-                        // Ensure viaje object exists for incomes even without km
-                        payload.viaje = {
-                            ...payload.viaje,
-                            origen: payload.viaje?.origen || 'Ubicación actual',
-                            destino: payload.viaje?.destino || 'Destino'
-                        };
-                    }
+                    // Also populate viaje structure if needed strictly by backend logic
+                    payload.viaje = {
+                        ...payload.viaje,
+                        distanciaKm: transaction.kmRecorridos,
+                        // Defaults to satisfy legacy validations (if any)
+                        origen: payload.viaje?.origen || 'Ubicación actual',
+                        destino: payload.viaje?.destino || 'Destino'
+                    };
+                } else {
+                    // Ensure viaje object exists for incomes even without km
+                    payload.viaje = {
+                        ...payload.viaje,
+                        origen: payload.viaje?.origen || 'Ubicación actual',
+                        destino: payload.viaje?.destino || 'Destino'
+                    };
                 }
-
-                const { data } = await client.post('/transactions', payload);
-                await fetchTransactions(); // Refetch to update list
-                return { success: true, data: data.data };
-            } catch (err) {
-                console.error("Error adding transaction: ", err);
-                return { success: false, error: err.response?.data?.error || err.message };
             }
-        };
 
-        const deleteTransaction = async (id) => {
-            if (!user) return { success: false, error: 'No user logged in' };
+            const { data } = await client.post('/transactions', payload);
+            await fetchTransactions(); // Refetch to update list
+            return { success: true, data: data.data };
 
-            try {
-                await client.delete(`/transactions/${id}`);
-                setTransactions(prev => prev.filter(t => t._id !== id));
-                return { success: true };
-            } catch (err) {
-                console.error("Error deleting transaction: ", err);
-                return { success: false, error: err.response?.data?.error || err.message };
-            }
-        };
 
-        return (
-            <FinanceContext.Provider value={{
-                transactions,
-                loading,
-                error,
-                addTransaction,
-                deleteTransaction,
-                refreshTransactions: fetchTransactions
-            }}>
-                {children}
-            </FinanceContext.Provider>
-        );
+        } catch (err) {
+            console.error("Error adding transaction: ", err);
+            return { success: false, error: err.response?.data?.error || err.message };
+        }
     };
+
+    const deleteTransaction = async (id) => {
+        if (!user) return { success: false, error: 'No user logged in' };
+
+        try {
+            await client.delete(`/transactions/${id}`);
+            setTransactions(prev => prev.filter(t => t._id !== id));
+            return { success: true };
+        } catch (err) {
+            console.error("Error deleting transaction: ", err);
+            return { success: false, error: err.response?.data?.error || err.message };
+        }
+    };
+
+    return (
+        <FinanceContext.Provider value={{
+            transactions,
+            loading,
+            error,
+            addTransaction,
+            deleteTransaction,
+            refreshTransactions: fetchTransactions
+        }}>
+            {children}
+        </FinanceContext.Provider>
+    );
+};
