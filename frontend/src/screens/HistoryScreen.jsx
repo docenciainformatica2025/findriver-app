@@ -68,7 +68,12 @@ export default function HistoryScreen() {
         if (cat.includes('alimen')) return 'Comida';
         if (cat.includes('manten')) return 'Mantenimiento';
 
-        // 2. Capitalize for Incomes (uber -> Uber)
+        // 2. For Incomes, prioritize Platform name
+        if (t.tipo === 'ingreso' && t.plataforma) {
+            return t.plataforma.charAt(0).toUpperCase() + t.plataforma.slice(1);
+        }
+
+        // 3. Fallback: Capitalize Category
         return cat.charAt(0).toUpperCase() + cat.slice(1);
     };
 
