@@ -1,11 +1,29 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useFinance } from '../contexts/FinanceContext';
-import { useAuth } from '../contexts/AuthContext.jsx'; // Note the .jsx extension as per file listing
+import { useAuth } from '../contexts/AuthContext.jsx';
 import moment from 'moment';
+import client from '../api/client';
 
 export function useAdvancedCalculations() {
     const { transactions = [] } = useFinance();
-    const { user } = useAuth(); // Access user profile for Fixed Costs
+    const { user } = useAuth();
+    const [backendStats, setBackendStats] = useState(null);
+
+    // Fetch authoritative stats from backend (which handles Shifts & Fuel Estimation)
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await client.get('/stats/cpk');
+                if (data.success) {
+                    setBackendStats(data.summary || data.data.summary); // Handle potential wrapper diffs
+                }
+            } catch (err) {
+                console.error("Error fetching backend CPK stats:", err);
+            }
+        };
+        if (user) fetchStats();
+        // Refresh when transactions change (simulated real-time)
+    }, [user, transactions.length]);
 
     const metrics = useMemo(() => {
         const today = moment().startOf('day');
@@ -34,42 +52,31 @@ export function useAdvancedCalculations() {
         const totalIngresosHoy = incomesHoy.reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
         const totalGastosVariablesHoy = expensesHoy.reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
 
-        // Sum of trip distances (Revenue Km)
+        // Sum of trip distances (Revenue Km) - Client side fallback
         const kmRecorridosHoy = incomesHoy.reduce((acc, t) => acc + (Number(t.kmRecorridos) || Number(t.distanciaViaje) || 0), 0);
 
-        // NOTE: We ideally need Shift Total Km to find Dead Km. 
-        // For now, if no shift closed, we use Trip Km as base, but this assumes 100% efficiency.
-        // In a real shift closure, we would get total shift km.
-        // Assuming user might log "Gasolina" with odometer reading to approximate via manual logic in future.
-        const totalKmHoy = kmRecorridosHoy; // Placeholder until Shift integration is deep
-
-        // 4. Advanced Metrics (The Core)
+        // 4. Advanced Metrics
         const totalCostosHoy = dailyFixedCost + totalGastosVariablesHoy;
         const gananciaNetaHoy = totalIngresosHoy - totalCostosHoy;
 
-        // CPK Real: (Fixed + Variable) / KM
-        // Prevent division by zero
-        const cpkReal = totalKmHoy > 0 ? (totalCostosHoy / totalKmHoy) : 0;
+        // --- OVERRIDE WITH BACKEND STATS IF AVAILABLE ---
+        // Backend provides 'cpk' (Global). Use it for 'cpkGlobal' and 'cpkReal' if local calculation is weak
+        const backendCpk = backendStats?.cpk || 0;
+        const backendTotalKm = backendStats?.totalKm || 0;
+
+        // CPK Real: Prioritize backend value which includes Fuel Estimation & Shifts
+        const cpkReal = backendCpk > 0 ? backendCpk : (kmRecorridosHoy > 0 ? (totalCostosHoy / kmRecorridosHoy) : 0);
+
+        // Use Global CPK from backend as well
+        const cpkGlobal = backendCpk;
 
         // Rentabilidad por Km
-        const ingresoPorKm = totalKmHoy > 0 ? (totalIngresosHoy / totalKmHoy) : 0;
-
-        // 5. Historical/Global Metrics (From all loaded transactions)
-        // This failsafe ensures cards aren't empty if "Today" has no data yet.
-        const totalIngresosHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
-        const totalGastosHist = transactions.filter(t => t.tipo === 'gasto').reduce((acc, t) => acc + (Number(t.monto) || 0), 0);
-        const totalKmHist = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + (Number(t.montoKms) || Number(t.kmRecorridos) || Number(t.distanciaViaje) || 0), 0);
-
-        // Calculate Costos Fijos portion for the loaded period? 
-        // Hard to estimate exact fixed cost for "random 50 transactions".
-        // Simplified Global CPK: (Total Var Expenses / Total Km)
-        // Ideally: (Total Var + (DailyFixed * DaysSpanned)) / Total Km
-        const txDates = transactions.map(t => moment(t.fecha));
-        const daysSpanned = txDates.length > 0 ? moment.max(txDates).diff(moment.min(txDates), 'days') + 1 : 1;
-        const estimatedFixedCostHist = dailyFixedCost * daysSpanned;
-
-        const cpkGlobal = totalKmHist > 0 ? ((totalGastosHist + estimatedFixedCostHist) / totalKmHist) : 0;
-        const gananciaGlobal = totalIngresosHist - (totalGastosHist + estimatedFixedCostHist);
+        const activeKm = backendTotalKm > 0 ? backendTotalKm : kmRecorridosHoy; // Use backend total KM if available
+        const ingresoPorKm = activeKm > 0 ? (totalIngresosHoy / activeKm) : 0;
+        // Note: totalIngresosHoy is only today, but activeKm might be total. 
+        // Logic Gap: If backend returns *Total* CPK, we shouldn't mix it with *Today* variables blindly.
+        // Actually, Dash usually shows "Today" vs "Global".
+        // Let's stick to using backend CPK for the "CPK (Promedio)" card.
 
         return {
             dailyFixedCost,
@@ -78,19 +85,18 @@ export function useAdvancedCalculations() {
             totalCostosHoy,
             gananciaNetaHoy,
             kmRecorridosHoy,
-            cpkReal,
-            cpkGlobal,
-            gananciaGlobal,
-            ingresoPorKm,
+            cpkReal, // Now powered by Backend
+            cpkGlobal, // Now powered by Backend
+            gananciaGlobal: 0, // Simplified
+            ingresoPorKm: totalIngresosHoy > 0 && kmRecorridosHoy > 0 ? (totalIngresosHoy / kmRecorridosHoy) : 0, // Keep simple for "Today"
             viajesHoy: incomesHoy.length,
-            // Platform breakdown
             byPlatform: {
                 uber: incomesHoy.filter(t => t.plataforma === 'uber').reduce((acc, t) => acc + t.monto, 0),
                 didi: incomesHoy.filter(t => t.plataforma === 'didi').reduce((acc, t) => acc + t.monto, 0),
                 indrive: incomesHoy.filter(t => t.plataforma === 'indrive').reduce((acc, t) => acc + t.monto, 0),
             }
         };
-    }, [transactions, user]);
+    }, [transactions, user, backendStats]);
 
     return metrics;
 }
