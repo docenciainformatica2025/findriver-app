@@ -160,7 +160,7 @@ export default function LoginScreen() {
                     </Box>
                 </Paper>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 4, mb: 2, fontSize: '0.75rem', opacity: 0.8, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                    Versión 1.3.0 - STABLE (Datos Guardados & Stats OK) © 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.
+                    Versión 1.3.1 - STABLE (Debug Enabled) © 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.
                 </Typography>
             </Box>
         </Container>

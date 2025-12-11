@@ -617,7 +617,7 @@ export default function ProfileScreen() {
             </Stack>
 
             <Box sx={{ textAlign: 'center', mt: 4, color: 'text.disabled' }}>
-                <Typography variant="caption" display="block">Versión 1.0.2</Typography>
+                <Typography variant="caption" display="block">Versión 1.3.1 - STABLE (Debug Enabled)</Typography>
                 <Typography variant="caption">© 2025 Ing. Antonio Rodríguez. Todos los derechos reservados.</Typography>
             </Box>
         </Box>
