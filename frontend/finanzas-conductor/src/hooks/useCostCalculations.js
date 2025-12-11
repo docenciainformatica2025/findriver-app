@@ -11,13 +11,13 @@ export const useCostCalculations = (transactions = [], vehicleInfo = {}) => {
         const calculateTotalKm = () => {
             const kmFromTrips = transactions
                 .filter(t => t.tipo === 'ingreso' && t.viaje?.distanciaKm)
-                .reduce((sum, t) => sum + (t.viaje.distanciaKm || 0), 0);
+                .reduce((sum, t) => sum + (Number(t.viaje?.distanciaKm) || 0), 0);
 
             // Si no hay datos de viajes, usar estimación basada en gastos de gasolina
             if (kmFromTrips === 0) {
                 const fuelExpenses = transactions
-                    .filter(t => t.tipo === 'gasto' && t.categoria === 'gasolina')
-                    .reduce((sum, t) => sum + (t.monto || 0), 0);
+                    .filter(t => t.tipo === 'gasto' && (t.categoria === 'gasolina' || t.categoría === 'Combustible'))
+                    .reduce((sum, t) => sum + (Number(t.monto) || 0), 0);
 
                 // Estimación: 12 km por litro, $22.5 por litro (usando vehicleInfo si existe, o defaults)
                 const fuelPrice = vehicleInfo.fuelPrice || 22.5;

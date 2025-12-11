@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Shift = require('../models/Shift');
+const Vehicle = require('../models/Vehicle');
 const logger = require('../utils/logger');
 
 // @desc    Obtener estadisticas completas de CPK
@@ -38,7 +38,14 @@ exports.getCPKStats = async (req, res) => {
                                 combustible: {
                                     $sum: {
                                         $cond: [
-                                            { $and: [{ $eq: ['$tipo', 'gasto'] }, { $eq: ['$categoria', 'Combustible'] }] },
+                                            {
+                                                $and: [
+                                                    { $eq: ['$tipo', 'gasto'] },
+                                                    {
+                                                        $in: ['$categoria', ['Combustible', 'Gasolina', 'Fuel', 'fuel', 'combustible']]
+                                                    }
+                                                ]
+                                            },
                                             '$monto',
                                             0
                                         ]
@@ -94,12 +101,54 @@ exports.getCPKStats = async (req, res) => {
         const shifts = shiftStats[0] || { totalKm: 0, kmMuertos: 0, diasTrabajados: 0 };
         const dailyTx = txStats[0].daily;
 
-        // 3. Cálculos Derivados (CPK)
-        // Evitar división por cero
-        const totalKm = shifts.totalKm || 1;
-        const cpk = totals.gastos / totalKm;
+        // 3. Obtener datos del vehículo para estimación
+        // Intentar buscar vehículo activo del usuario
+        let vehicle = null;
+        try {
+            // Vehicle.findOne returns a promise that resolves to a Vehicle instance or null
+            // We need to use valid syntax for the static method if it exists, or find array
+            const vehicles = await Vehicle.find({ userId: userId.toString(), activo: true });
+            if (vehicles && vehicles.length > 0) {
+                vehicle = vehicles[0];
+            }
+        } catch (vErr) {
+            logger.warn('No se pudo obtener vehículo para estimación', vErr);
+        }
+
+        // Datos del vehículo para cálculo (defaults si no hay settings)
+        // Rendimiento: km por peso (e.g. 12km/l / $22.5/l ~= 0.53 km/$) -> No, más bien Costo = Litros * Precio.
+        // Necesitamos rendimiento (km/l) y precio gasolina ($/l)
+        // Default: 10 km/l y $24/l => Costo/Km = 24/10 = $2.4/km
+
+        // Mejor aproximación inversa: Si gasté $1000 de gasolina, cuantos km recorrí?
+        // Litros = $1000 / PrecioLitro
+        // Km = Litros * Rendimiento
+
+        const fuelPrice = (vehicle && vehicle.config && vehicle.config.fuelPrice) || 24; // $24 MXN por litro default
+        const fuelEfficiency = (vehicle && vehicle.config && vehicle.config.fuelEfficiency) || 10; // 10 km/l default
+
+        // 4. Cálculos Derivados (CPK)
+        let totalKm = shifts.totalKm;
+        let isEstimatedKm = false;
+
+        // Fallback: Si no hay km registrados (o son absurdamente bajos) y hay gasto de gasolina, estimar
+        if ((!totalKm || totalKm < 10) && totals.combustible > 0) {
+            const liters = totals.combustible / fuelPrice;
+            const estimatedKm = liters * fuelEfficiency;
+
+            // Usar la estimación si es mayor que lo registrado
+            if (estimatedKm > totalKm) {
+                totalKm = estimatedKm;
+                isEstimatedKm = true;
+            }
+        }
+
+        // Asegurar que no sea cero para divisiones
+        const finalTotalKm = totalKm || 1;
+
+        const cpk = totals.gastos / finalTotalKm;
         const utilidadNeta = totals.ingresos - totals.gastos;
-        const rentabilidadPorKm = utilidadNeta / totalKm;
+        const rentabilidadPorKm = utilidadNeta / finalTotalKm;
 
         // 4. Merge de datos diarios para gráfica completa
         // Nota: Idealmente cruzaríamos con shifts diarios también, por ahora simplificado
@@ -118,7 +167,8 @@ exports.getCPKStats = async (req, res) => {
                     gastos: totals.gastos,
                     utilidad: utilidadNeta,
                     cpk: parseFloat(cpk.toFixed(2)),
-                    totalKm: shifts.totalKm,
+                    totalKm: parseFloat(finalTotalKm.toFixed(1)), // Usar el calculado (real o estimado)
+                    isEstimatedKm,
                     kmMuertos: shifts.kmMuertos,
                     eficienciaKm: shifts.totalKm > 0 ? ((shifts.totalKm - shifts.kmMuertos) / shifts.totalKm) * 100 : 0
                 },

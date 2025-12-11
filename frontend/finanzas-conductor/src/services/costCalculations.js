@@ -157,20 +157,38 @@ export const calculateCompleteCostAnalysis = (transactions, totalKm) => {
     let totalIncome = 0;
     let totalTrips = 0;
 
+    // Helper para normalizar categorías
+    const mapCategoryToKey = (category) => {
+        if (!category) return 'other';
+        const lowerCat = category.toLowerCase().trim();
+
+        if (lowerCat.includes('combustible') || lowerCat.includes('gasolina')) return 'fuel';
+        if (lowerCat.includes('mantenimiento')) return 'maintenance';
+        if (lowerCat.includes('seguro')) return 'insurance';
+        if (lowerCat.includes('peaje')) return 'tolls';
+        if (lowerCat.includes('estacionamiento') || lowerCat.includes('parqueadero')) return 'parking';
+        if (lowerCat.includes('multa')) return 'fines';
+        if (lowerCat.includes('comida') || lowerCat.includes('alimento')) return 'food';
+
+        return 'other';
+    };
+
     transactions.forEach(transaction => {
         if (transaction.tipo === 'gasto') {
-            const amount = transaction.monto || 0;
-            const category = transaction.categoria || 'other';
+            const amount = Number(transaction.monto) || 0;
+            // Usar la categoría mapeada
+            const originalCategory = transaction.categoria || transaction.categoría || 'other'; // Soporte para ambas llaves si es necesario
+            const categoryKey = mapCategoryToKey(originalCategory);
 
-            if (expensesBreakdown.hasOwnProperty(category)) {
-                expensesBreakdown[category] += amount;
+            if (expensesBreakdown.hasOwnProperty(categoryKey)) {
+                expensesBreakdown[categoryKey] += amount;
             } else {
                 expensesBreakdown.other += amount;
             }
 
             totalExpenses += amount;
         } else if (transaction.tipo === 'ingreso') {
-            totalIncome += transaction.monto || 0;
+            totalIncome += Number(transaction.monto) || 0;
             totalTrips++;
         }
     });
