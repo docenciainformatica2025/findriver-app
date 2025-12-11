@@ -77,10 +77,6 @@ exports.getCPKStats = async (req, res) => {
             }
         });
 
-        const history = Array.from(dailyMap.values())
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .map(d => ({ ...d, utilidad: d.ingresos - d.gastos }));
-
         // 2. Obtener Jornadas (Shifts) para Km
         const shiftSnap = await db.collection('shifts')
             .where('userId', '==', userId)
@@ -98,8 +94,27 @@ exports.getCPKStats = async (req, res) => {
                 return matchesDate && matchesStatus;
             });
 
+        // Add Shift KM to Daily Map
+        shifts.forEach(shift => {
+            const fechaKey = (shift.fechaInicio || new Date().toISOString()).split('T')[0];
+            const km = Number(shift.totalKm) || 0;
 
+            if (!dailyMap.has(fechaKey)) {
+                dailyMap.set(fechaKey, { date: fechaKey, ingresos: 0, gastos: 0, totalKm: 0 });
+            }
+            const dayStats = dailyMap.get(fechaKey);
+            if (dayStats.totalKm === undefined) dayStats.totalKm = 0;
+            dayStats.totalKm += km;
+        });
 
+        // Generate History AFTER merging shifts
+        const history = Array.from(dailyMap.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .map(d => ({
+                ...d,
+                utilidad: d.ingresos - d.gastos,
+                totalKm: d.totalKm || 0
+            }));
 
         const shiftStats = shifts.reduce((acc, curr) => ({
             totalKm: acc.totalKm + (curr.totalKm || 0),
