@@ -29,6 +29,7 @@ import MaintenanceAlerts from '../components/MaintenanceAlerts';
 import StatCard from '../components/StatCard';
 import OnboardingModal from '../components/OnboardingModal';
 import RecentTransactions from '../components/RecentTransactions';
+import GoalTracker from '../components/GoalTracker';
 import { formatMoney } from '../utils/formatters';
 
 export default function DashboardScreen() {
@@ -119,6 +120,9 @@ export default function DashboardScreen() {
 
                 {/* Onboarding Wizard */}
                 <OnboardingModal />
+
+                {/* Motivational Goal Tracker */}
+                <GoalTracker />
 
                 {/* KPI Cards Grid */}
                 <Grid container spacing={3} sx={{ mb: 4 }}>
