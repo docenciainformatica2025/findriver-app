@@ -1,163 +1,133 @@
+const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Shift = require('../models/Shift');
 const Vehicle = require('../models/Vehicle');
 const logger = require('../utils/logger');
+const { db } = require('../config/firebase'); // Accesing Firestore directly
 
 // @desc    Obtener estadisticas completas de CPK
 // @route   GET /api/v1/stats/cpk
 exports.getCPKStats = async (req, res) => {
     try {
-        const userId = new mongoose.Types.ObjectId(req.user.id);
+        const userId = req.user.id;
         const { startDate, endDate } = req.query;
 
         // Definir rango de fechas (default: últimos 30 días)
         const end = endDate ? new Date(endDate) : new Date();
         const start = startDate ? new Date(startDate) : new Date(new Date().setDate(end.getDate() - 30));
 
-        // Ajustar start al inicio del día y end al final del día
+        // Ajustar estricto a ISO string para filtros de Firestore
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 999);
+        const startIso = start.toISOString();
+        const endIso = end.toISOString();
 
-        // 1. Agregación de Transacciones (Ingresos y Gastos)
-        const txStats = await Transaction.aggregate([
-            {
-                $match: {
-                    userId: userId,
-                    fecha: { $gte: start, $lte: end }
-                }
-            },
-            {
-                $facet: {
-                    // Totales generales
-                    totals: [
-                        {
-                            $group: {
-                                _id: null,
-                                ingresos: { $sum: { $cond: [{ $eq: ['$tipo', 'ingreso'] }, '$monto', 0] } },
-                                gastos: { $sum: { $cond: [{ $eq: ['$tipo', 'gasto'] }, '$monto', 0] } },
-                                combustible: {
-                                    $sum: {
-                                        $cond: [
-                                            {
-                                                $and: [
-                                                    { $eq: ['$tipo', 'gasto'] },
-                                                    {
-                                                        $in: ['$categoria', ['Combustible', 'Gasolina', 'Fuel', 'fuel', 'combustible']]
-                                                    }
-                                                ]
-                                            },
-                                            '$monto',
-                                            0
-                                        ]
-                                    }
-                                },
-                                otrosGastos: {
-                                    $sum: {
-                                        $cond: [
-                                            { $and: [{ $eq: ['$tipo', 'gasto'] }, { $ne: ['$categoria', 'Combustible'] }] },
-                                            '$monto',
-                                            0
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    ],
-                    // Datos por día para gráfica
-                    daily: [
-                        {
-                            $group: {
-                                _id: { $dateToString: { format: '%Y-%m-%d', date: '$fecha' } },
-                                ingresos: { $sum: { $cond: [{ $eq: ['$tipo', 'ingreso'] }, '$monto', 0] } },
-                                gastos: { $sum: { $cond: [{ $eq: ['$tipo', 'gasto'] }, '$monto', 0] } }
-                            }
-                        },
-                        { $sort: { _id: 1 } }
-                    ]
+        // 1. Obtener Transacciones (In-Memory Aggregation)
+        // Firestore no soporta aggregate complejo nativamente en wrapper, fetching raw
+        const txSnap = await db.collection('transactions')
+            .where('userId', '==', userId)
+            .where('fecha', '>=', startIso)
+            .where('fecha', '<=', endIso)
+            .get();
+
+        const transactions = txSnap.docs.map(doc => doc.data());
+
+        // Procesar transacciones en memoria
+        const totals = {
+            ingresos: 0,
+            gastos: 0,
+            combustible: 0,
+            otrosGastos: 0
+        };
+
+        const dailyMap = new Map();
+
+        // Categorías de combustible normalizadas
+        const fuelCategories = ['combustible', 'gasolina', 'fuel'];
+
+        transactions.forEach(tx => {
+            const monto = Number(tx.monto) || 0;
+            const fechaKey = (tx.fecha || new Date().toISOString()).split('T')[0];
+            const categoria = (tx.categoria || tx.category || 'other').toLowerCase();
+
+            // Inicializar día si no existe
+            if (!dailyMap.has(fechaKey)) {
+                dailyMap.set(fechaKey, { date: fechaKey, ingresos: 0, gastos: 0 });
+            }
+            const dayStats = dailyMap.get(fechaKey);
+
+            if (tx.tipo === 'ingreso') {
+                totals.ingresos += monto;
+                dayStats.ingresos += monto;
+            } else if (tx.tipo === 'gasto') {
+                totals.gastos += monto;
+                dayStats.gastos += monto;
+
+                if (fuelCategories.includes(categoria)) {
+                    totals.combustible += monto;
+                } else {
+                    totals.otrosGastos += monto;
                 }
             }
-        ]);
+        });
 
-        // 2. Agregación de Jornadas (Kilómetros)
-        const shiftStats = await Shift.aggregate([
-            {
-                $match: {
-                    userId: userId,
-                    fechaInicio: { $gte: start, $lte: end },
-                    estado: 'cerrado' // Solo jornadas terminadas
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalKm: { $sum: '$totalKm' },
-                    kmMuertos: { $sum: '$kmMuertos' },
-                    diasTrabajados: { $sum: 1 }
-                }
-            }
-        ]);
+        const history = Array.from(dailyMap.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .map(d => ({ ...d, utilidad: d.ingresos - d.gastos }));
 
-        const totals = txStats[0].totals[0] || { ingresos: 0, gastos: 0, combustible: 0, otrosGastos: 0 };
-        const shifts = shiftStats[0] || { totalKm: 0, kmMuertos: 0, diasTrabajados: 0 };
-        const dailyTx = txStats[0].daily;
+        // 2. Obtener Jornadas (Shifts) para Km
+        const shiftSnap = await db.collection('shifts')
+            .where('userId', '==', userId)
+            .where('fechaInicio', '>=', startIso)
+            .where('fechaInicio', '<=', endIso)
+            .where('estado', '==', 'cerrado')
+            .get();
 
-        // 3. Obtener datos del vehículo para estimación
-        // Intentar buscar vehículo activo del usuario
-        let vehicle = null;
-        try {
-            // Vehicle.findOne returns a promise that resolves to a Vehicle instance or null
-            // We need to use valid syntax for the static method if it exists, or find array
-            const vehicles = await Vehicle.find({ userId: userId.toString(), activo: true });
-            if (vehicles && vehicles.length > 0) {
-                vehicle = vehicles[0];
-            }
-        } catch (vErr) {
-            logger.warn('No se pudo obtener vehículo para estimación', vErr);
-        }
+        const shifts = shiftSnap.docs.map(doc => doc.data());
 
-        // Datos del vehículo para cálculo (defaults si no hay settings)
-        // Rendimiento: km por peso (e.g. 12km/l / $22.5/l ~= 0.53 km/$) -> No, más bien Costo = Litros * Precio.
-        // Necesitamos rendimiento (km/l) y precio gasolina ($/l)
-        // Default: 10 km/l y $24/l => Costo/Km = 24/10 = $2.4/km
+        const shiftStats = shifts.reduce((acc, curr) => ({
+            totalKm: acc.totalKm + (curr.totalKm || 0),
+            kmMuertos: acc.kmMuertos + (curr.kmMuertos || 0)
+        }), { totalKm: 0, kmMuertos: 0 });
 
-        // Mejor aproximación inversa: Si gasté $1000 de gasolina, cuantos km recorrí?
-        // Litros = $1000 / PrecioLitro
-        // Km = Litros * Rendimiento
-
-        const fuelPrice = (vehicle && vehicle.config && vehicle.config.fuelPrice) || 24; // $24 MXN por litro default
-        const fuelEfficiency = (vehicle && vehicle.config && vehicle.config.fuelEfficiency) || 10; // 10 km/l default
-
-        // 4. Cálculos Derivados (CPK)
-        let totalKm = shifts.totalKm;
+        // 3. Lógica de Respaldo para Km (Estimación Inteligente)
+        let totalKm = shiftStats.totalKm;
         let isEstimatedKm = false;
 
-        // Fallback: Si no hay km registrados (o son absurdamente bajos) y hay gasto de gasolina, estimar
+        // Obtener config del vehículo para estimación
+        let vehicle = null;
+        try {
+            const vehicleSnap = await db.collection('vehicles')
+                .where('userId', '==', userId)
+                .where('activo', '==', true)
+                .limit(1)
+                .get();
+
+            if (!vehicleSnap.empty) {
+                vehicle = vehicleSnap.docs[0].data();
+            }
+        } catch (e) {
+            logger.warn('Error fetching vehicle for CPK estimate', e);
+        }
+
+        const fuelPrice = (vehicle?.config?.fuelPrice) || 24;
+        const fuelEfficiency = (vehicle?.config?.fuelEfficiency) || 10;
+
+        // Si no hay Km registrados pero hay gasto de combustible, estimar
         if ((!totalKm || totalKm < 10) && totals.combustible > 0) {
             const liters = totals.combustible / fuelPrice;
             const estimatedKm = liters * fuelEfficiency;
 
-            // Usar la estimación si es mayor que lo registrado
+            // Usar la estimación si es mayor que lo registrado (o si no hay nada registrado)
             if (estimatedKm > totalKm) {
                 totalKm = estimatedKm;
                 isEstimatedKm = true;
             }
         }
 
-        // Asegurar que no sea cero para divisiones
-        const finalTotalKm = totalKm || 1;
-
+        const finalTotalKm = totalKm || 1; // Evitar div/0
         const cpk = totals.gastos / finalTotalKm;
         const utilidadNeta = totals.ingresos - totals.gastos;
-        const rentabilidadPorKm = utilidadNeta / finalTotalKm;
-
-        // 4. Merge de datos diarios para gráfica completa
-        // Nota: Idealmente cruzaríamos con shifts diarios también, por ahora simplificado
-        const history = dailyTx.map(day => ({
-            date: day._id,
-            ingresos: day.ingresos,
-            gastos: day.gastos,
-            utilidad: day.ingresos - day.gastos
-        }));
 
         res.json({
             success: true,
@@ -167,10 +137,10 @@ exports.getCPKStats = async (req, res) => {
                     gastos: totals.gastos,
                     utilidad: utilidadNeta,
                     cpk: parseFloat(cpk.toFixed(2)),
-                    totalKm: parseFloat(finalTotalKm.toFixed(1)), // Usar el calculado (real o estimado)
+                    totalKm: parseFloat(finalTotalKm.toFixed(1)),
                     isEstimatedKm,
-                    kmMuertos: shifts.kmMuertos,
-                    eficienciaKm: shifts.totalKm > 0 ? ((shifts.totalKm - shifts.kmMuertos) / shifts.totalKm) * 100 : 0
+                    kmMuertos: shiftStats.kmMuertos,
+                    eficienciaKm: shiftStats.totalKm > 0 ? ((shiftStats.totalKm - shiftStats.kmMuertos) / shiftStats.totalKm) * 100 : 0
                 },
                 breakdown: {
                     combustible: totals.combustible,
