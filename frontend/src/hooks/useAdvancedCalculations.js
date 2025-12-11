@@ -15,7 +15,7 @@ export function useAdvancedCalculations() {
             try {
                 const { data } = await client.get('/stats/cpk');
                 if (data.success) {
-                    setBackendStats(data); // Store full response (summary + history)
+                    setBackendStats(data.data); // Store INNER payload (summary, today, history)
                 }
             } catch (err) {
                 console.error("Error fetching backend CPK stats:", err);
