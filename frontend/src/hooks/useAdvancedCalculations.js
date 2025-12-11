@@ -15,7 +15,7 @@ export function useAdvancedCalculations() {
             try {
                 const { data } = await client.get('/stats/cpk');
                 if (data.success) {
-                    setBackendStats(data.summary || data.data.summary); // Handle potential wrapper diffs
+                    setBackendStats(data); // Store full response (summary + history)
                 }
             } catch (err) {
                 console.error("Error fetching backend CPK stats:", err);
@@ -60,9 +60,10 @@ export function useAdvancedCalculations() {
         const gananciaNetaHoy = totalIngresosHoy - totalCostosHoy;
 
         // --- OVERRIDE WITH BACKEND STATS IF AVAILABLE ---
-        // Backend provides 'cpk' (Global). Use it for 'cpkGlobal' and 'cpkReal' if local calculation is weak
-        const backendCpk = backendStats?.cpk || 0;
-        const backendTotalKm = backendStats?.totalKm || 0;
+        // Backend provides 'cpk' (Global) in summary.
+        const summary = backendStats?.summary || {};
+        const backendCpk = summary.cpk || 0;
+        const backendTotalKm = summary.totalKm || 0;
 
         // CPK Real: Prioritize backend value which includes Fuel Estimation & Shifts
         const cpkReal = backendCpk > 0 ? backendCpk : (kmRecorridosHoy > 0 ? (totalCostosHoy / kmRecorridosHoy) : 0);
