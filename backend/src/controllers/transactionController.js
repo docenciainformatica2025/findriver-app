@@ -374,24 +374,45 @@ exports.getStats = async (req, res) => {
 exports.getByCategory = async (req, res) => {
     try {
         const { tipo } = req.query;
+        const db = require('../config/firebase').db;
 
-        const matchStage = { userId: req.user.id };
-        if (tipo) matchStage.tipo = tipo;
+        // Fetch query for filtering
+        let ref = db.collection('transactions').where('userId', '==', req.user.id);
+        if (tipo) ref = ref.where('tipo', '==', tipo);
 
-        const transactionsByCategory = await Transaction.aggregate([
-            { $match: matchStage },
-            {
-                $group: {
-                    _id: '$categoria',
-                    total: { $sum: '$monto' },
-                    count: { $sum: 1 },
-                    promedio: { $avg: '$monto' },
-                    max: { $max: '$monto' },
-                    min: { $min: '$monto' }
-                }
-            },
-            { $sort: { total: -1 } }
-        ]);
+        const snapshot = await ref.get();
+        const transactions = snapshot.docs.map(doc => doc.data());
+
+        // In-memory aggregation
+        const categoryMap = new Map();
+
+        transactions.forEach(tx => {
+            const cat = tx.categoria || 'Sin Categoría';
+            const monto = Number(tx.monto) || 0;
+
+            if (!categoryMap.has(cat)) {
+                categoryMap.set(cat, {
+                    _id: cat,
+                    total: 0,
+                    count: 0,
+                    min: monto,
+                    max: monto
+                });
+            }
+
+            const stat = categoryMap.get(cat);
+            stat.total += monto;
+            stat.count += 1;
+            stat.min = Math.min(stat.min, monto);
+            stat.max = Math.max(stat.max, monto);
+        });
+
+        const transactionsByCategory = Array.from(categoryMap.values())
+            .map(stat => ({
+                ...stat,
+                promedio: stat.total / stat.count
+            }))
+            .sort((a, b) => b.total - a.total); // Sort by total descending
 
         res.status(200).json({
             success: true,
@@ -414,48 +435,76 @@ exports.getByCategory = async (req, res) => {
 exports.getByPeriod = async (req, res) => {
     try {
         const { periodo = 'diario', limite = 30 } = req.query;
+        const db = require('../config/firebase').db;
 
-        let groupFormat;
-        switch (periodo) {
-            case 'diario':
-                groupFormat = '%Y-%m-%d';
-                break;
-            case 'semanal':
-                groupFormat = '%Y-%U'; // Año-Semana
-                break;
-            case 'mensual':
-                groupFormat = '%Y-%m';
-                break;
-            case 'anual':
-                groupFormat = '%Y';
-                break;
-            default:
-                groupFormat = '%Y-%m-%d';
-        }
+        // Fetch query
+        // Note: For large datasets, fetching ALL user transactions might be heavy.
+        // Assuming user data fits in memory for this MVP stage or we add a date limit.
+        // For performance, we should ideally restrict date range, but here we mimic the original logic.
+        const snapshot = await db.collection('transactions')
+            .where('userId', '==', req.user.id)
+            .get();
 
-        const transactionsByPeriod = await Transaction.aggregate([
-            { $match: { userId: req.user.id } },
-            {
-                $group: {
-                    _id: { $dateToString: { format: groupFormat, date: '$fecha' } },
-                    ingresos: { $sum: { $cond: [{ $eq: ['$tipo', 'ingreso'] }, '$monto', 0] } },
-                    gastos: { $sum: { $cond: [{ $eq: ['$tipo', 'gasto'] }, '$monto', 0] } },
-                    ganancias: {
-                        $sum: {
-                            $cond: [
-                                { $eq: ['$tipo', 'ingreso'] },
-                                '$monto',
-                                { $multiply: ['$monto', -1] }
-                            ]
-                        }
-                    },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: -1 } },
-            { $limit: parseInt(limite) },
-            { $sort: { _id: 1 } } // Reordenar cronológicamente
-        ]);
+        const transactions = snapshot.docs.map(doc => doc.data());
+
+        // Helper to format keys
+        const formatDateKey = (date, format) => {
+            const d = new Date(date);
+            if (isNaN(d)) return 'Invalid Date';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+
+            // Replicating mongo $dateToString formats roughly
+            switch (format) {
+                case 'diario': return `${year}-${month}-${day}`;
+                case 'mensual': return `${year}-${month}`;
+                case 'anual': return `${year}`;
+                case 'semanal':
+                    // Simple week calc (ISO week would be better but keeping it simple)
+                    const oneJan = new Date(d.getFullYear(), 0, 1);
+                    const numberOfDays = Math.floor((d - oneJan) / (24 * 60 * 60 * 1000));
+                    const week = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
+                    return `${year}-${week}`;
+                default: return `${year}-${month}-${day}`;
+            }
+        };
+
+        const groupMap = new Map();
+
+        transactions.forEach(tx => {
+            const key = formatDateKey(tx.fecha, periodo);
+            const monto = Number(tx.monto) || 0;
+            const isIngreso = tx.tipo === 'ingreso';
+            const isGasto = tx.tipo === 'gasto';
+
+            if (!groupMap.has(key)) {
+                groupMap.set(key, {
+                    _id: key,
+                    ingresos: 0,
+                    gastos: 0,
+                    ganancias: 0,
+                    count: 0
+                });
+            }
+
+            const stat = groupMap.get(key);
+            stat.count++;
+
+            if (isIngreso) {
+                stat.ingresos += monto;
+                stat.ganancias += monto;
+            } else if (isGasto) {
+                stat.gastos += monto;
+                stat.ganancias -= monto;
+            }
+        });
+
+        // Convert Map to Array, sort, limit, and re-sort
+        const transactionsByPeriod = Array.from(groupMap.values())
+            .sort((a, b) => b._id.localeCompare(a._id)) // Sort desc by date
+            .slice(0, parseInt(limite))
+            .sort((a, b) => a._id.localeCompare(b._id)); // Re-sort asc
 
         res.status(200).json({
             success: true,
