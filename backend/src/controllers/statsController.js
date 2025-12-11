@@ -11,6 +11,8 @@ exports.getCPKStats = async (req, res) => {
     try {
         const userId = req.user.id;
         const { startDate, endDate } = req.query;
+        console.log(`[CPK_DEBUG] Request for User: ${userId}`);
+
 
         // Definir rango de fechas (default: últimos 30 días)
         const end = endDate ? new Date(endDate) : new Date();
@@ -160,12 +162,20 @@ exports.getCPKStats = async (req, res) => {
         const cpk = totals.gastos / finalTotalKm;
         const utilidadNeta = totals.ingresos - totals.gastos;
 
+        // ... existing logic ...
+        console.log(`[CPK_DEBUG] Found ${transactions.length} transactions.`);
+        console.log(`[CPK_DEBUG] Found ${shifts.length} shifts.`);
+
         // Identify Today's Stats (Server Time)
         // Use the 'end' date which defaults to Today
         const todayKey = end.toISOString().split('T')[0];
         const todayStats = dailyMap.get(todayKey) || { ingresos: 0, gastos: 0, totalKm: 0 };
         // Ensure derived fields
         todayStats.utilidad = todayStats.ingresos - todayStats.gastos;
+
+        console.log(`[CPK_DEBUG] TodayKey: ${todayKey}`);
+        console.log(`[CPK_DEBUG] TodayStats:`, JSON.stringify(todayStats));
+        console.log(`[CPK_DEBUG] Final CPK: ${cpk}`);
 
         res.json({
             success: true,
