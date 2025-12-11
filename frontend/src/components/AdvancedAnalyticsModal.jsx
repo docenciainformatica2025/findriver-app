@@ -53,7 +53,7 @@ export default function AdvancedAnalyticsModal({ open, onClose }) {
                     <Grid item xs={12}>
                         <StatItem
                             icon={<SpeedIcon />}
-                            label="CPK Real (Costo por Km)"
+                            label="CPK Promedio (30 días)"
                             value={formatMoney(metrics.cpkReal)}
                             subtext={`Incluye $${formatMoney(metrics.dailyFixedCost)} de costos fijos diarios`}
                             color="#E74C3C"
@@ -64,7 +64,7 @@ export default function AdvancedAnalyticsModal({ open, onClose }) {
                     <Grid item xs={6}>
                         <StatItem
                             icon={<MoneyIcon />}
-                            label="Ingreso por Km"
+                            label="Ingreso/Km (Hoy)"
                             value={formatMoney(metrics.ingresoPorKm)}
                             color="#2ECC71"
                         />
