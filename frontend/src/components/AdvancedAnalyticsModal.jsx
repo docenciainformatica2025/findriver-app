@@ -98,6 +98,20 @@ export default function AdvancedAnalyticsModal({ open, onClose }) {
                         </Box>
                     </Grid>
                 </Grid>
+                <Box sx={{ mt: 2, p: 1, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                    <Typography variant="caption" fontFamily="monospace" display="block">
+                        DEBUG INFO (v1.3.1):
+                    </Typography>
+                    <Typography variant="caption" fontFamily="monospace" display="block">
+                        Ingresos Hoy: ${metrics.totalIngresosHoy}
+                    </Typography>
+                    <Typography variant="caption" fontFamily="monospace" display="block">
+                        Km Hoy (Active): {metrics.kmRecorridosHoy} (Client) / {metrics.cpkReal > 0 ? 'Backend' : 'N/A'}
+                    </Typography>
+                    <Typography variant="caption" fontFamily="monospace" display="block">
+                        Ingreso/Km Calc: ${metrics.ingresoPorKm}
+                    </Typography>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} variant="contained" fullWidth>Cerrar Análisis</Button>
