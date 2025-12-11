@@ -71,13 +71,15 @@ export function useAdvancedCalculations() {
         // Use Global CPK from backend as well
         const cpkGlobal = backendCpk;
 
+        // --- DAILY METRICS FROM BACKEND DIRECTLY ---
+        // Backend now provides 'today' object. This avoids Timezone Mismatches.
+        const backendToday = backendStats?.today || {};
+        const backendTodayKm = Number(backendToday.totalKm) || 0;
+
         // Rentabilidad por Km
-        const activeKm = backendTotalKm > 0 ? backendTotalKm : kmRecorridosHoy; // Use backend total KM if available
+        const activeKm = backendTodayKm > 0 ? backendTodayKm : (kmRecorridosHoy > 0 ? kmRecorridosHoy : 0);
+
         const ingresoPorKm = activeKm > 0 ? (totalIngresosHoy / activeKm) : 0;
-        // Note: totalIngresosHoy is only today, but activeKm might be total. 
-        // Logic Gap: If backend returns *Total* CPK, we shouldn't mix it with *Today* variables blindly.
-        // Actually, Dash usually shows "Today" vs "Global".
-        // Let's stick to using backend CPK for the "CPK (Promedio)" card.
 
         return {
             dailyFixedCost,

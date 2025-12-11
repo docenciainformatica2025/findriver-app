@@ -160,6 +160,13 @@ exports.getCPKStats = async (req, res) => {
         const cpk = totals.gastos / finalTotalKm;
         const utilidadNeta = totals.ingresos - totals.gastos;
 
+        // Identify Today's Stats (Server Time)
+        // Use the 'end' date which defaults to Today
+        const todayKey = end.toISOString().split('T')[0];
+        const todayStats = dailyMap.get(todayKey) || { ingresos: 0, gastos: 0, totalKm: 0 };
+        // Ensure derived fields
+        todayStats.utilidad = todayStats.ingresos - todayStats.gastos;
+
         res.json({
             success: true,
             data: {
@@ -173,6 +180,7 @@ exports.getCPKStats = async (req, res) => {
                     kmMuertos: shiftStats.kmMuertos,
                     eficienciaKm: shiftStats.totalKm > 0 ? ((shiftStats.totalKm - shiftStats.kmMuertos) / shiftStats.totalKm) * 100 : 0
                 },
+                today: todayStats, // Explicit Today Stats
                 breakdown: {
                     combustible: totals.combustible,
                     otros: totals.otrosGastos
