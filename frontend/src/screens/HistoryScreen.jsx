@@ -58,8 +58,23 @@ export default function HistoryScreen() {
         toast.success('Exportación exitosa');
     };
 
+    // Helper to unify display titles
+    const getDisplayTitle = (t) => {
+        let cat = (t.categoria || t.categoría || 'General').toLowerCase();
+
+        // 1. Alias for standardized expenses
+        if (cat === 'combustible') return 'Gasolina';
+        if (cat.includes('peaje')) return 'Peajes';
+        if (cat.includes('alimen')) return 'Comida';
+        if (cat.includes('manten')) return 'Mantenimiento';
+
+        // 2. Capitalize for Incomes (uber -> Uber)
+        return cat.charAt(0).toUpperCase() + cat.slice(1);
+    };
+
     return (
         <Box sx={{ p: 2, pb: 10 }}>
+            {/* Header code same as before... */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Historial
@@ -83,7 +98,7 @@ export default function HistoryScreen() {
 
                 {sortedTransactions.map(t => (
                     <Card
-                        key={t._id || t.id} // Ensure ID access
+                        key={t._id || t.id}
                         sx={{
                             borderLeft: 6,
                             borderColor: t.tipo === 'ingreso' ? 'success.main' : 'error.main',
@@ -93,7 +108,7 @@ export default function HistoryScreen() {
                         <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, '&:last-child': { pb: 2 } }}>
                             <Box>
                                 <Typography variant="subtitle1" fontWeight="bold">
-                                    {t.categoria || t.categoría || 'General'}
+                                    {getDisplayTitle(t)}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     {moment(t.fecha).format('DD/MM/YYYY HH:mm')} • {t.descripcion || t.descripción || 'Sin descripción'}
