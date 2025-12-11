@@ -101,7 +101,7 @@ export function useAdvancedCalculations() {
             cpkReal, // Now powered by Backend
             cpkGlobal, // Now powered by Backend
             gananciaGlobal: 0, // Simplified
-            ingresoPorKm: totalIngresosHoy > 0 && kmRecorridosHoy > 0 ? (totalIngresosHoy / kmRecorridosHoy) : 0, // Keep simple for "Today"
+            ingresoPorKm, // Use the robustly calculated variable from above
             viajesHoy: incomesHoy.length,
             byPlatform: {
                 uber: incomesHoy.filter(t => t.plataforma === 'uber').reduce((acc, t) => acc + t.monto, 0),
