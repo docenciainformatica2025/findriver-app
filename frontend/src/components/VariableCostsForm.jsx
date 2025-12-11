@@ -24,7 +24,8 @@ import {
     AttachMoney as MoneyIcon,
     Speed as SpeedIcon,
     Description as DescriptionIcon,
-    CheckCircle as CheckIcon
+    CheckCircle as CheckIcon,
+    Fastfood as FoodIcon
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 import { formatMoney } from '../utils/formatters';
@@ -34,7 +35,7 @@ export default function VariableCostsForm() {
     const { user } = useAuth();
 
     // Form States
-    const [category, setCategory] = useState('Combustible');
+    const [category, setCategory] = useState('Gasolina');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [km, setKm] = useState('');
@@ -54,7 +55,7 @@ export default function VariableCostsForm() {
     const handleCategoryChange = (e) => {
         const newCat = e.target.value;
         setCategory(newCat);
-        if (newCat === 'Combustible' && (!fuelPrice || fuelPrice === 0)) {
+        if (newCat === 'Gasolina' && (!fuelPrice || fuelPrice === 0)) {
             setShowPriceConfig(true);
         }
     };
@@ -92,7 +93,7 @@ export default function VariableCostsForm() {
         e.preventDefault();
         if (!amount) return;
 
-        if (category === 'Combustible') {
+        if (category === 'Gasolina') {
             setShowConfirmDialog(true);
         } else {
             submitTransaction();
@@ -118,11 +119,11 @@ export default function VariableCostsForm() {
             tipo: 'gasto',
             monto: parseFloat(amount),
             categoria: category, // Note: Backend uses 'categoria' not 'categoría'
-            descripcion: description || (category === 'Combustible' ? `Tanqueo a ${formatMoney(currentFuelPrice)}/gl` : category),
+            descripcion: description || (category === 'Gasolina' ? `Tanqueo a ${formatMoney(currentFuelPrice)}/gl` : category),
             fecha: new Date().toISOString()
         };
 
-        if (category === 'Combustible') {
+        if (category === 'Gasolina') {
             // Calcular litros
             const litros = parseFloat(amount) / currentFuelPrice;
             transactionData.gasto = {
@@ -151,9 +152,10 @@ export default function VariableCostsForm() {
 
     const getIcon = (cat) => {
         switch (cat) {
-            case 'Combustible': return <GasIcon color="action" />;
+            case 'Gasolina': return <GasIcon color="action" />;
             case 'Mantenimiento': return <MaintenanceIcon color="action" />;
-            case 'Peaje': return <TollIcon color="action" />;
+            case 'Peajes': return <TollIcon color="action" />;
+            case 'Comida': return <FoodIcon color="action" />;
             default: return <OtherIcon color="action" />;
         }
     };
@@ -179,10 +181,11 @@ export default function VariableCostsForm() {
                         ),
                     }}
                 >
-                    <MenuItem value="Combustible">Combustible</MenuItem>
+                    <MenuItem value="Gasolina">Gasolina</MenuItem>
                     <MenuItem value="Mantenimiento">Mantenimiento</MenuItem>
-                    <MenuItem value="Peaje">Peaje/Estacionamiento</MenuItem>
-                    <MenuItem value="Otro">Otro</MenuItem>
+                    <MenuItem value="Peajes">Peajes</MenuItem>
+                    <MenuItem value="Comida">Comida</MenuItem>
+                    <MenuItem value="Otros">Otros</MenuItem>
                 </TextField>
 
                 <TextField
