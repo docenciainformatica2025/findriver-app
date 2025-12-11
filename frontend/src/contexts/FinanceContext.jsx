@@ -57,11 +57,16 @@ export const FinanceProvider = ({ children }) => {
                 };
             }
 
-            if (transaction.tipo === 'ingreso' && transaction.distancia) {
-                payload.viaje = {
-                    ...payload.viaje,
-                    distanciaKm: transaction.distancia
-                };
+            if (transaction.tipo === 'ingreso') {
+                // Ensure kmRecorridos is passed if present
+                if (transaction.kmRecorridos) {
+                    payload.kmRecorridos = transaction.kmRecorridos;
+                    // Also populate viaje structure if needed strictly by backend logic
+                    payload.viaje = {
+                        ...payload.viaje,
+                        distanciaKm: transaction.kmRecorridos
+                    };
+                }
             }
 
             const { data } = await client.post('/transactions', payload);
