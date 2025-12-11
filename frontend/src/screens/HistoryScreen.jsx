@@ -108,8 +108,14 @@ export default function HistoryScreen() {
                                     >
                                         {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
                                     </Typography>
-                                    {(t.odometro > 0 || t.odómetro > 0) && (
-                                        <Chip label={`${t.odometro || t.odómetro} km`} size="small" variant="outlined" color="primary" sx={{ mt: 0.5 }} />
+                                    {(t.odometro > 0 || t.odómetro > 0 || t.kmRecorridos > 0 || t.distanciaViaje > 0) && (
+                                        <Chip
+                                            label={`${t.odometro || t.odómetro || t.kmRecorridos || t.distanciaViaje} km`}
+                                            size="small"
+                                            variant="outlined"
+                                            color="primary"
+                                            sx={{ mt: 0.5 }}
+                                        />
                                     )}
                                 </Box>
                                 <IconButton

@@ -103,6 +103,7 @@ export function useAdvancedCalculations() {
             gananciaGlobal: 0, // Simplified
             ingresoPorKm, // Use the robustly calculated variable from above
             viajesHoy: incomesHoy.length,
+            kmHoy: activeKm, // Expose authoritative KM (Backend or Frontend Fallback)
             byPlatform: {
                 uber: incomesHoy.filter(t => t.plataforma === 'uber').reduce((acc, t) => acc + t.monto, 0),
                 didi: incomesHoy.filter(t => t.plataforma === 'didi').reduce((acc, t) => acc + t.monto, 0),

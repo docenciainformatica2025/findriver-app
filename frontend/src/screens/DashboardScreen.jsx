@@ -42,6 +42,7 @@ export default function DashboardScreen() {
         gananciaGlobal, // New
         ingresoPorKm,
         viajesHoy,
+        kmHoy, // New 
         dailyFixedCost
     } = useAdvancedCalculations();
 
@@ -136,7 +137,7 @@ export default function DashboardScreen() {
                             icon={<WalletIcon />}
                             theme={cardThemes.secondary}
                             to="/ingresos"
-                            subtitle={`${viajesHoy} viajes`}
+                            subtitle={`${viajesHoy} viajes • ${kmHoy} km`}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} lg={3}>
